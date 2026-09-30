@@ -1,29 +1,49 @@
 import { Booking, TelegramSimulatedMessage } from './types';
 
 export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-export const TELEGRAM_ARTS_CC_CHAT_ID = process.env.TELEGRAM_ARTS_CC_CHAT_ID || '';
+export const TELEGRAM_QM_CHAT_ID = process.env.TELEGRAM_QM_CHAT_ID || '';
+export const TELEGRAM_ABBEY_LICENSED_CHAT_ID =
+  process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID || process.env.TELEGRAM_ARTS_CC_CHAT_ID || '';
+export const TELEGRAM_ARTS_CC_CHAT_ID = TELEGRAM_ABBEY_LICENSED_CHAT_ID;
 
 /**
- * Format door opening dispatch message for Arts CC Telegram Group
+ * Format DM sent directly to Quartermaster (@mezyyy)
  */
-export function formatDoorOpeningMessage(booking: Booking): { text: string; inlineKeyboard: any } {
-  const gearList = booking.equipmentNeeds.length > 0 ? booking.equipmentNeeds.join(', ') : 'Standard backline';
+export function formatQMDMMessage(booking: Booking): string {
+  const gear = booking.equipmentNeeds.length > 0 ? booking.equipmentNeeds.join(', ') : 'Standard backline';
+  const unlockStatus = booking.needsDoorUnlock
+    ? '⚠️ Yes (door-opening message queued for Abbey Licensed 12h prior)'
+    : 'No (has door access)';
 
-  const text = `🎸 *NEW ABBEY BOOKING CONFIRMED* 🎸\n\n` +
+  return (
+    `🎸 *New Abbey Booking*\n\n` +
     `📅 *Date:* ${booking.date}\n` +
     `⏰ *Time:* ${booking.startTime} – ${booking.endTime}\n` +
     `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
     `🏠 *House:* ${booking.tembusuHouse}\n` +
     `👥 *Band / Purpose:* ${booking.bandName} (${booking.purpose})\n` +
-    `🔌 *Gear Needed:* ${gearList}\n\n` +
-    `❓ *Arts CC Duty: Who is in hall and can unlock the Abbey?*\n` +
-    `Tap the button below to claim! 👇`;
+    `🔌 *Gear:* ${gear}\n` +
+    `🔑 *Needs Unlock:* ${unlockStatus}`
+  );
+}
+
+/**
+ * Format door opening dispatch message for Abbey Licensed Telegram Group (sent 12h before timeslot)
+ */
+export function formatDoorOpeningMessage(booking: Booking): { text: string; inlineKeyboard: any } {
+  const text =
+    `🎸 *Abbey Booking — Unlock Needed*\n\n` +
+    `📅 *Date:* ${booking.date}\n` +
+    `⏰ *Time:* ${booking.startTime} – ${booking.endTime}\n` +
+    `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
+    `👥 *Band:* ${booking.bandName}\n\n` +
+    `Can anyone in hall help unlock the Abbey? Tap below to claim:`;
 
   const inlineKeyboard = {
     inline_keyboard: [
       [
         {
-          text: '🔑 I can open the Abbey',
+          text: '🔑 I can unlock the Abbey',
           callback_data: `claim_door:${booking.id}`,
         },
       ],

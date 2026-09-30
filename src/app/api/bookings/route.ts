@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Booking } from '@/lib/types';
-import { formatDoorOpeningMessage, sendTelegramMessage, TELEGRAM_ARTS_CC_CHAT_ID } from '@/lib/telegram';
+import { formatDoorOpeningMessage, formatQMDMMessage, sendTelegramMessage, TELEGRAM_QM_CHAT_ID, TELEGRAM_ABBEY_LICENSED_CHAT_ID } from '@/lib/telegram';
 
 // In-memory runtime storage for demo/development (can be seamlessly connected to Supabase/PostgreSQL)
 let bookingsState: Booking[] = [];
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
       bandName,
       purpose,
       equipmentNeeds,
+      needsDoorUnlock,
     } = body;
 
     // Basic validation
@@ -44,18 +45,22 @@ export async function POST(request: Request) {
       bandName: bandName || 'Independent Session',
       purpose: purpose || 'Band Practice',
       equipmentNeeds: equipmentNeeds || [],
+      needsDoorUnlock: Boolean(needsDoorUnlock),
       status: 'confirmed',
       createdAt: new Date().toISOString(),
     };
 
     bookingsState.push(newBooking);
 
-    // Dispatch Telegram Bot Alert to Arts CC group if configured
-    if (TELEGRAM_ARTS_CC_CHAT_ID) {
-      const { text, inlineKeyboard } = formatDoorOpeningMessage(newBooking);
-      await sendTelegramMessage(TELEGRAM_ARTS_CC_CHAT_ID, text, inlineKeyboard);
+    // 1. Send DM to Quartermaster (@mezyyy)
+    const { TELEGRAM_QM_CHAT_ID, TELEGRAM_ABBEY_LICENSED_CHAT_ID, formatQMDMMessage, formatDoorOpeningMessage } = await import('@/lib/telegram');
+    if (TELEGRAM_QM_CHAT_ID) {
+      const qmMsg = formatQMDMMessage(newBooking);
+      await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg);
     }
 
+    // 2. If needs unlock, note that it will be dispatched to Abbey Licensed 12h prior
+    // In production cron / serverless, this queues for 12h before slot
     return NextResponse.json({ success: true, booking: newBooking });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create booking' }, { status: 500 });

@@ -21,27 +21,24 @@ export default function Navbar({
   unreadTelegramCount = 0,
 }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-40 bg-[#0d1117]/90 backdrop-blur-md border-b border-[#30363d] px-4 lg:px-8 py-3.5 transition-all">
+    <header className="sticky top-0 z-40 bg-[#121418]/90 backdrop-blur-md border-b border-[#232730] px-4 lg:px-8 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Logo and College Brand */}
+        {/* Logo and Brand */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('calendar')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 text-white font-bold">
-              <Music2 className="w-5 h-5 text-amber-100" />
+          <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setActiveTab('calendar')}>
+            <div className="w-8 h-8 rounded-lg bg-stone-800 border border-stone-700/60 flex items-center justify-center text-stone-200">
+              <Music2 className="w-4 h-4 text-amber-200/80" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-lg text-white tracking-tight">The Abbey</span>
-                <span className="text-xs bg-amber-500/20 text-amber-300 font-medium px-2 py-0.5 rounded-full border border-amber-500/30">
-                  Tembusu Arts CC
-                </span>
+                <span className="font-semibold text-base text-stone-100 tracking-tight">The Abbey</span>
+                <span className="text-[11px] text-stone-400">Tembusu</span>
                 {isConcertMode && (
-                  <span className="text-xs bg-red-500/20 text-red-300 font-semibold px-2 py-0.5 rounded-full border border-red-500/40 animate-pulse flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Concert Mode
+                  <span className="text-[10px] bg-rose-950/60 text-rose-300 px-2 py-0.5 rounded-full border border-rose-800/40">
+                    Concert Mode
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">Bandroom Booking & Duty Management</p>
             </div>
           </div>
 
@@ -49,19 +46,19 @@ export default function Navbar({
           <div className="flex md:hidden items-center space-x-2">
             <button
               onClick={onToggleTelegramDrawer}
-              className="relative p-2 rounded-lg bg-[#21262d] text-slate-300 hover:text-white border border-[#30363d]"
-              title="Telegram Duty Stream"
+              className="relative p-2 rounded-lg bg-[#1c2026] text-stone-300 border border-[#2b303b]"
+              title="Telegram Feed"
             >
-              <Send className="w-4 h-4 text-sky-400" />
+              <Send className="w-3.5 h-3.5 text-stone-300" />
               {unreadTelegramCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 text-stone-950 text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadTelegramCount}
                 </span>
               )}
             </button>
             <button
               onClick={onOpenBookingModal}
-              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold"
+              className="px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-white text-stone-950 text-xs font-medium"
             >
               + Book
             </button>
@@ -69,66 +66,65 @@ export default function Navbar({
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center space-x-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+        <nav className="flex items-center space-x-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none text-xs">
           <button
             onClick={() => setActiveTab('calendar')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-colors ${
               activeTab === 'calendar'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-[#21262d]'
+                ? 'bg-[#222730] text-stone-100 font-medium'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-[#1a1e24]'
             }`}
           >
-            <Calendar className="w-4 h-4" />
+            <Calendar className="w-3.5 h-3.5" />
             <span>Schedule</span>
           </button>
 
           <button
             onClick={() => setActiveTab('loans')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-colors ${
               activeTab === 'loans'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-[#21262d]'
+                ? 'bg-[#222730] text-stone-100 font-medium'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-[#1a1e24]'
             }`}
           >
-            <Wrench className="w-4 h-4" />
-            <span>Equipment Loans</span>
+            <Wrench className="w-3.5 h-3.5" />
+            <span>Gear Loans</span>
           </button>
 
           <button
             onClick={() => setActiveTab('licenses')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-colors ${
               activeTab === 'licenses'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-[#21262d]'
+                ? 'bg-[#222730] text-stone-100 font-medium'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-[#1a1e24]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>AY26/27 Licenses</span>
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Licensing</span>
           </button>
 
           <button
             onClick={() => setActiveTab('admin')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-colors ${
               activeTab === 'admin'
-                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-[#21262d]'
+                ? 'bg-[#222730] text-stone-100 font-medium'
+                : 'text-stone-400 hover:text-stone-200 hover:bg-[#1a1e24]'
             }`}
           >
-            <ShieldCheck className="w-4 h-4 text-purple-400" />
             <span>QM Admin</span>
           </button>
         </nav>
 
         {/* Right CTA buttons (Desktop) */}
-        <div className="hidden md:flex items-center space-x-3">
+        <div className="hidden md:flex items-center space-x-2.5">
           <button
             onClick={onToggleTelegramDrawer}
-            className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-slate-200 text-xs font-medium border border-[#30363d] transition-all hover:border-sky-500/40 relative"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#1c2026] hover:bg-[#232830] text-stone-300 text-xs border border-[#2b303b] transition-colors relative"
           >
-            <Send className="w-4 h-4 text-sky-400" />
-            <span>Telegram Bot Feed</span>
+            <Send className="w-3.5 h-3.5 text-stone-300" />
+            <span>Telegram Feed</span>
             {unreadTelegramCount > 0 && (
-              <span className="w-5 h-5 bg-sky-500 text-slate-950 font-bold rounded-full text-[10px] flex items-center justify-center">
+              <span className="w-4 h-4 bg-amber-400/90 text-stone-950 font-bold rounded-full text-[9px] flex items-center justify-center">
                 {unreadTelegramCount}
               </span>
             )}
@@ -136,9 +132,9 @@ export default function Navbar({
 
           <button
             onClick={onOpenBookingModal}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-stone-200 hover:bg-white text-stone-950 text-xs font-semibold shadow-sm transition-colors"
           >
-            <span>+ Book The Abbey</span>
+            <span>+ Book Slot</span>
           </button>
         </div>
       </div>

@@ -49,29 +49,46 @@ export default function Home() {
 
     setBookings((prev) => [newBooking, ...prev]);
 
-    // Create automatic Telegram alert message to Arts CC group chat
     const gearList =
       bookingData.equipmentNeeds.length > 0
         ? bookingData.equipmentNeeds.join(', ')
         : 'Standard backline';
 
-    const newTelegramMsg: TelegramSimulatedMessage = {
-      id: `tg-${Date.now()}`,
+    // 1. Direct Message to Quartermaster (@mezyyy)
+    const qmMsg: TelegramSimulatedMessage = {
+      id: `tg-qm-${Date.now()}`,
       bookingId: newId,
-      chatType: 'group_arts_cc',
-      title: 'Arts CC Door Duty Dispatch',
-      body: `🎸 *NEW ABBEY BOOKING CONFIRMED*\n📅 Date: ${bookingData.date}\n⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n🏠 House: ${bookingData.tembusuHouse}\n👥 Band: ${bookingData.bandName} (${bookingData.purpose})\n🔌 Gear: ${gearList}\n\n❓ *Arts CC Duty: Who is in hall and can unlock the Abbey?*`,
+      chatType: 'direct_message_qm',
+      recipientHandle: '@mezyyy',
+      title: 'DM to Quartermaster (@mezyyy)',
+      body: `🎸 *New Abbey Booking*\n\n📅 Date: ${bookingData.date}\n⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n🏠 House: ${bookingData.tembusuHouse}\n👥 Band: ${bookingData.bandName} (${bookingData.purpose})\n🔌 Gear: ${gearList}\n🔑 Door Unlock: ${bookingData.needsDoorUnlock ? 'Requested (Dispatches to Abbey Licensed 12h prior)' : 'Not needed (Resident has door access)'}`,
       timestamp: 'Just now',
-      hasDoorOpenAction: true,
     };
 
-    setTelegramMessages((prev) => [newTelegramMsg, ...prev]);
-    setUnreadTelegramCount((prev) => prev + 1);
+    const newMessages: TelegramSimulatedMessage[] = [qmMsg];
+
+    // 2. If door unlock is checked, schedule message to Abbey Licensed group 12 hours prior
+    if (bookingData.needsDoorUnlock) {
+      const groupMsg: TelegramSimulatedMessage = {
+        id: `tg-grp-${Date.now()}`,
+        bookingId: newId,
+        chatType: 'group_abbey_licensed',
+        title: 'Abbey Licensed Group (Door Duty)',
+        body: `🎸 *Abbey Booking — Unlock Needed*\n\n📅 Date: ${bookingData.date}\n⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n🏠 House: ${bookingData.tembusuHouse}\n👥 Band: ${bookingData.bandName}\n🔌 Gear: ${gearList}\n\nCan anyone in hall unlock the Abbey?`,
+        timestamp: 'Scheduled (12h prior)',
+        scheduledDispatchNote: 'Dispatches 12 hours before slot',
+        hasDoorOpenAction: true,
+      };
+      newMessages.push(groupMsg);
+    }
+
+    setTelegramMessages((prev) => [...newMessages, ...prev]);
+    setUnreadTelegramCount((prev) => prev + newMessages.length);
     setIsBookingModalOpen(false);
-    setIsTelegramDrawerOpen(true); // Open drawer immediately so user sees the Telegram action in motion!
+    setIsTelegramDrawerOpen(true);
   };
 
-  // When an Arts CC member taps "I can open the door"
+  // When an Abbey Licensed member taps "I can open the door"
   const handleClaimDoor = (bookingId: string, claimerHandle: string) => {
     setBookings((prev) =>
       prev.map((b) =>
@@ -125,7 +142,15 @@ export default function Home() {
       ...user,
       id: `lic-${Date.now()}`,
     };
-    setLicensedUsers((prev) => [...prev, newUser]);
+    setLicensedUsers((prev) => [newUser, ...prev]);
+  };
+
+  const handleBatchAddLicenses = (newUsers: Array<Omit<LicensedUser, 'id'>>) => {
+    const entries: LicensedUser[] = newUsers.map((u, i) => ({
+      ...u,
+      id: `lic-${Date.now()}-${i}`,
+    }));
+    setLicensedUsers((prev) => [...entries, ...prev]);
   };
 
   const handleDeleteLicense = (id: string) => {
@@ -143,7 +168,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#101216] text-stone-200 flex flex-col font-sans">
       {/* Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -180,6 +205,7 @@ export default function Home() {
             bookings={bookings}
             licensedUsers={licensedUsers}
             onAddLicense={handleAddLicense}
+            onBatchAddLicenses={handleBatchAddLicenses}
             onDeleteLicense={handleDeleteLicense}
             isConcertMode={isConcertMode}
             onToggleConcertMode={() => setIsConcertMode(!isConcertMode)}
@@ -191,6 +217,7 @@ export default function Home() {
             bookings={bookings}
             licensedUsers={licensedUsers}
             onAddLicense={handleAddLicense}
+            onBatchAddLicenses={handleBatchAddLicenses}
             onDeleteLicense={handleDeleteLicense}
             isConcertMode={isConcertMode}
             onToggleConcertMode={() => setIsConcertMode(!isConcertMode)}

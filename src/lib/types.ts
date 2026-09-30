@@ -14,8 +14,9 @@ export interface Booking {
   bandName: string;
   purpose: 'Band Practice' | 'Concert Rehearsal' | 'Solo Jam' | 'IG Rehearsal' | 'Recording' | 'Other';
   equipmentNeeds: string[];
+  needsDoorUnlock: boolean; // Whether resident needs someone to unlock the Abbey
   status: BookingStatus;
-  doorOpenerHandle?: string; // Telegram handle of Arts CC member who claimed opening
+  doorOpenerHandle?: string; // Telegram handle of Abbey Licensed member who claimed opening
   doorClaimedAt?: string;
   checkoutPhotoUrl?: string; // Photo sent via telegram
   checkoutTimestamp?: string;
@@ -57,11 +58,12 @@ export interface EquipmentLoan {
 export interface TelegramSimulatedMessage {
   id: string;
   bookingId?: string;
-  chatType: 'group_arts_cc' | 'direct_message';
+  chatType: 'group_abbey_licensed' | 'direct_message_qm' | 'direct_message';
   recipientHandle?: string;
   title: string;
   body: string;
   timestamp: string;
+  scheduledDispatchNote?: string;
   hasDoorOpenAction?: boolean;
   claimedBy?: string;
   hasPhotoCheckoutAction?: boolean;

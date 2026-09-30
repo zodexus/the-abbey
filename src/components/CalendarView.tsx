@@ -49,74 +49,53 @@ export default function CalendarView({
   const activeDay = weekDays[0];
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner & Quick Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#161b22] border border-[#30363d] p-4 lg:p-5 rounded-2xl shadow-sm">
+    <div className="space-y-4">
+      {/* Clean Top Bar */}
+      <div className="flex items-center justify-between bg-[#16191f] border border-[#262b34] p-3.5 rounded-xl">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <span>The Abbey Bandroom Schedule</span>
-            <span className="text-xs font-normal bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-              Live Real-Time
-            </span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Tap on any vacant slot to reserve your practice session. Verified AY26/27 license required.
-          </p>
+          <h1 className="text-base font-semibold text-stone-100">Abbey Schedule</h1>
         </div>
 
         {/* Date Navigator */}
-        <div className="flex items-center space-x-2 self-start md:self-auto">
+        <div className="flex items-center space-x-1.5">
           <button
             onClick={() => setSelectedDayOffset((prev) => prev - 7)}
-            className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-slate-300 hover:text-white border border-[#30363d] transition-colors"
-            title="Previous Week"
+            className="p-1.5 rounded-lg bg-[#1f242d] hover:bg-[#282e3a] text-stone-300 border border-[#2d3340] transition-colors"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setSelectedDayOffset(0)}
-            className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-slate-200 text-xs font-medium border border-[#30363d] transition-colors"
+            className="px-2.5 py-1 rounded-lg bg-[#1f242d] hover:bg-[#282e3a] text-stone-300 text-xs font-medium border border-[#2d3340] transition-colors"
           >
             Today
           </button>
           <button
             onClick={() => setSelectedDayOffset((prev) => prev + 7)}
-            className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-slate-300 hover:text-white border border-[#30363d] transition-colors"
-            title="Next Week"
+            className="p-1.5 rounded-lg bg-[#1f242d] hover:bg-[#282e3a] text-stone-300 border border-[#2d3340] transition-colors"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Handover Notice Alert */}
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 flex items-start space-x-3 text-xs text-amber-200/90">
-        <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-semibold text-amber-300">Quartermaster Notice:</span>
-          <p>
-            Please respect your booked time slot. To keep room opening smooth, Arts CC duty members are alerted automatically via Telegram. Clean up 10 mins before your session ends and reply with a photo to check out!
-          </p>
-        </div>
-      </div>
-
-      {/* Responsive Weekly Grid */}
-      <div className="bg-[#161b22] border border-[#30363d] rounded-2xl overflow-hidden shadow-lg">
+      {/* Weekly Grid */}
+      <div className="bg-[#14171c] border border-[#232731] rounded-xl overflow-hidden shadow-sm">
         {/* Day Header Row */}
-        <div className="grid grid-cols-8 border-b border-[#30363d] bg-[#0d1117]/80 text-xs text-slate-400">
-          <div className="p-3 text-center border-r border-[#30363d] font-semibold flex items-center justify-center">
-            <Clock className="w-3.5 h-3.5 mr-1 text-slate-500" />
+        <div className="grid grid-cols-8 border-b border-[#232731] bg-[#181b22] text-xs text-stone-400">
+          <div className="p-2.5 text-center border-r border-[#232731] font-medium flex items-center justify-center">
+            <Clock className="w-3.5 h-3.5 mr-1 text-stone-500" />
             <span>Time</span>
           </div>
           {weekDays.map((day) => (
             <div
               key={day.dateStr}
-              className={`p-3 text-center border-r last:border-r-0 border-[#30363d] ${
-                day.isToday ? 'bg-amber-500/10 text-amber-300' : ''
+              className={`p-2.5 text-center border-r last:border-r-0 border-[#232731] ${
+                day.isToday ? 'bg-amber-400/5 text-amber-200' : ''
               }`}
             >
-              <div className="font-semibold uppercase tracking-wider text-[11px]">{day.dayName}</div>
-              <div className={`text-base font-bold mt-0.5 ${day.isToday ? 'text-amber-400' : 'text-slate-200'}`}>
+              <div className="font-medium text-[11px] text-stone-400">{day.dayName}</div>
+              <div className={`text-sm font-semibold mt-0.5 ${day.isToday ? 'text-amber-200' : 'text-stone-200'}`}>
                 {day.dayNumber} {day.monthName}
               </div>
             </div>
@@ -124,15 +103,14 @@ export default function CalendarView({
         </div>
 
         {/* Schedule Matrix Rows */}
-        <div className="divide-y divide-[#21262d]">
+        <div className="divide-y divide-[#1e222b]">
           {HOURS.map((hour) => {
             const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-            const nextTimeStr = `${(hour + 1).toString().padStart(2, '0')}:00`;
 
             return (
-              <div key={hour} className="grid grid-cols-8 min-h-[72px] transition-colors">
+              <div key={hour} className="grid grid-cols-8 min-h-[68px] transition-colors">
                 {/* Time Label Column */}
-                <div className="p-2 border-r border-[#30363d] bg-[#0d1117]/40 text-slate-400 text-xs font-mono flex items-center justify-center">
+                <div className="p-2 border-r border-[#232731] bg-[#16191f]/50 text-stone-400 text-xs font-mono flex items-center justify-center">
                   {timeStr}
                 </div>
 
@@ -159,17 +137,15 @@ export default function CalendarView({
                     return (
                       <div
                         key={day.dateStr}
-                        className="p-1.5 border-r last:border-r-0 border-[#30363d] bg-purple-950/20 border-l-2 border-l-purple-500 flex flex-col justify-between"
+                        className="p-1.5 border-r last:border-r-0 border-[#232731] bg-[#1a1724] border-l-2 border-l-purple-400/50 flex flex-col justify-between"
                       >
-                        <div className="text-[10px] font-semibold text-purple-300 uppercase tracking-wide">
-                          Recurring IG
-                        </div>
-                        <div className="text-xs font-bold text-white truncate" title={recurring.title}>
-                          {recurring.title}
-                        </div>
-                        <div className="text-[10px] text-purple-300/80 truncate">
+                        <div className="text-[10px] text-purple-300/80 font-medium">
                           {recurring.assignedGroup}
                         </div>
+                        <div className="text-xs font-medium text-stone-200 truncate" title={recurring.title}>
+                          {recurring.title}
+                        </div>
+                        <div className="text-[9px] text-stone-500">Fixed Session</div>
                       </div>
                     );
                   }
@@ -181,43 +157,45 @@ export default function CalendarView({
                     return (
                       <div
                         key={day.dateStr}
-                        className={`p-1.5 border-r last:border-r-0 border-[#30363d] flex flex-col justify-between transition-all ${
+                        className={`p-1.5 border-r last:border-r-0 border-[#232731] flex flex-col justify-between transition-all ${
                           isCheckedOut
-                            ? 'bg-emerald-950/20 border-l-2 border-l-emerald-500'
-                            : 'bg-amber-950/30 border-l-2 border-l-amber-500'
+                            ? 'bg-[#152119] border-l-2 border-l-emerald-600/50'
+                            : 'bg-[#1a1f27] border-l-2 border-l-amber-400/40'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-semibold text-amber-300 truncate">
+                          <span className="text-[11px] font-medium text-stone-200 truncate">
                             {booking.bandName}
                           </span>
-                          <span className="text-[9px] bg-[#21262d] text-slate-300 px-1 py-0.5 rounded">
+                          <span className="text-[9px] text-stone-400">
                             {booking.tembusuHouse}
                           </span>
                         </div>
 
-                        <div className="text-[11px] text-slate-200 font-medium truncate mt-0.5">
+                        <div className="text-[10px] text-stone-400 truncate">
                           {booking.residentName}
                         </div>
 
-                        {/* Door Opener Badge */}
-                        <div className="mt-1 flex items-center justify-between text-[10px]">
-                          {isOpeningClaimed ? (
-                            <span className="flex items-center gap-1 text-emerald-400 font-medium truncate" title={`Door duty claimed by ${booking.doorOpenerHandle}`}>
-                              <Key className="w-3 h-3 flex-shrink-0" />
-                              <span className="truncate">{booking.doorOpenerHandle}</span>
-                            </span>
+                        {/* Door Opener / Access Status */}
+                        <div className="mt-0.5 flex items-center justify-between text-[10px]">
+                          {booking.needsDoorUnlock ? (
+                            isOpeningClaimed ? (
+                              <span className="flex items-center gap-1 text-emerald-300/90 truncate" title={`Door claimed by ${booking.doorOpenerHandle}`}>
+                                <Key className="w-2.5 h-2.5 flex-shrink-0" />
+                                <span className="truncate">{booking.doorOpenerHandle}</span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-amber-300/80">
+                                <Key className="w-2.5 h-2.5 flex-shrink-0" />
+                                <span>Unlock needed</span>
+                              </span>
+                            )
                           ) : (
-                            <span className="flex items-center gap-1 text-amber-400/90 font-medium">
-                              <Key className="w-3 h-3 flex-shrink-0" />
-                              <span>Door: Pending</span>
-                            </span>
+                            <span className="text-stone-500 text-[9px]">Has door access</span>
                           )}
 
                           {isCheckedOut && (
-                            <span className="text-emerald-400 font-medium text-[9px] bg-emerald-500/20 px-1 rounded">
-                              ✓ Done
-                            </span>
+                            <span className="text-emerald-400 text-[9px]">✓ Out</span>
                           )}
                         </div>
                       </div>
@@ -229,9 +207,9 @@ export default function CalendarView({
                     <button
                       key={day.dateStr}
                       onClick={() => onSelectSlot(day.dateStr, timeStr)}
-                      className="group p-1.5 border-r last:border-r-0 border-[#30363d] hover:bg-amber-500/10 flex flex-col items-center justify-center transition-colors text-slate-600 hover:text-amber-300"
+                      className="group p-1.5 border-r last:border-r-0 border-[#232731] hover:bg-[#1a1e26] flex flex-col items-center justify-center transition-colors text-stone-600 hover:text-stone-300"
                     >
-                      <span className="opacity-0 group-hover:opacity-100 text-[11px] font-semibold transition-opacity bg-amber-500/20 px-2 py-1 rounded-lg border border-amber-500/40 text-amber-300">
+                      <span className="opacity-0 group-hover:opacity-100 text-[10px] font-medium transition-opacity bg-stone-800 px-2 py-0.5 rounded text-stone-200">
                         + Book
                       </span>
                     </button>
@@ -243,30 +221,23 @@ export default function CalendarView({
         </div>
       </div>
 
-      {/* Legend & College Guidelines Footer */}
-      <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 pt-2">
+      {/* Clean Minimal Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-stone-400 pt-1">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded bg-amber-500/30 border border-amber-500" />
-            <span>Reserved Slot</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#1a1f27] border border-amber-400/40" />
+            <span className="text-[11px]">Booked</span>
           </div>
           <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded bg-purple-900/40 border border-purple-500" />
-            <span>Recurring IG Block (tKaraoke / Podcast)</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#1a1724] border border-purple-400/40" />
+            <span className="text-[11px]">tKaraoke / Podcast IG</span>
           </div>
           <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded bg-emerald-900/40 border border-emerald-500" />
-            <span>Checked Out with Photo</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded bg-[#21262d] border border-[#30363d]" />
-            <span>Vacant (Click to Book)</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#152119] border border-emerald-600/40" />
+            <span className="text-[11px]">Checked Out</span>
           </div>
         </div>
-
-        <div className="text-slate-500 text-[11px]">
-          Max 2 hrs/session • 7-day advance booking window
-        </div>
+        <div className="text-[11px] text-stone-500">Max 2 hours per booking</div>
       </div>
     </div>
   );
