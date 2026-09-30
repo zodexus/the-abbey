@@ -43,14 +43,39 @@ export interface RecurringSlot {
   notes?: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  barcode: string;
+  name: string;
+  category: string;
+  subtype: string;
+  workingQty: number;
+  isAvailable: boolean;
+}
+
+export interface RecurringEquipmentLoan {
+  id: string;
+  groupName: string;
+  schedule: string;
+  equipmentList: string[];
+  notes: string;
+}
+
 export interface EquipmentLoan {
   id: string;
-  requesterName: string;
-  telegramHandle: string;
-  eventName: string;
-  startDate: string;
-  endDate: string;
-  equipmentList: string[];
+  requesterName: string; // Full Name
+  telegramHandle: string; // Telegram Handle
+  committee: 'CSC' | 'House' | 'Interest Group' | 'Student Band' | 'No' | string;
+  purpose: string; // Purpose of loan
+  eventName?: string; // Backwards compatibility alias for purpose
+  basePackage: 'Set A' | 'Set B' | 'Set C' | 'None';
+  equipmentList: string[]; // Specific inventory items / additional items requested
+  additionalNotes?: string;
+  startDate: string; // Start Date of Loan
+  startTime?: string; // Start Time of Loan
+  endDate: string; // End Date of Loan
+  endTime?: string; // End Time of Loan
+  agreedToTerms: boolean;
   status: 'pending' | 'approved' | 'rejected' | 'returned';
   createdAt: string;
 }

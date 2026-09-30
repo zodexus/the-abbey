@@ -165,6 +165,26 @@ export default function Home() {
       createdAt: new Date().toISOString().split('T')[0],
     };
     setLoans((prev) => [newLoan, ...prev]);
+
+    // Send direct Telegram notification to Quartermaster (@mezyyy)
+    const newMsg: TelegramSimulatedMessage = {
+      id: `msg-${Date.now()}`,
+      chatType: 'direct_message_qm',
+      recipientHandle: '@mezyyy',
+      title: '📦 New Equipment Loan Request',
+      body:
+        `📦 *New Equipment Loan Request*\n\n` +
+        `👤 *Requester:* ${newLoan.requesterName} (${newLoan.telegramHandle})\n` +
+        `🏛️ *Committee:* ${newLoan.committee || 'Resident'}\n` +
+        `🎯 *Purpose:* ${newLoan.purpose}\n` +
+        `📅 *Dates:* ${newLoan.startDate} to ${newLoan.endDate}\n` +
+        `📦 *Package:* ${newLoan.basePackage}\n` +
+        `🔧 *Gear:* ${newLoan.equipmentList.join('; ')}`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setTelegramMessages((prev) => [newMsg, ...prev]);
+    setUnreadTelegramCount((c) => c + 1);
   };
 
   return (

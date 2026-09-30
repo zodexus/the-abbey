@@ -1,0 +1,1604 @@
+[
+  {
+    "id": "WX001",
+    "barcode": "WX001",
+    "name": "Mogami (5M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX002",
+    "barcode": "WX002",
+    "name": "Canare (5M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX003",
+    "barcode": "WX003",
+    "name": "Klotz + Switchcraft Head (5M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "WX004",
+    "barcode": "WX004",
+    "name": "D'Addario Custom Series (3M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX005",
+    "barcode": "WX005",
+    "name": "\"Rohs Professional Low-Noise Microphone Cable\" (5M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "WX006",
+    "barcode": "WX006",
+    "name": "Stagg (6M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX007",
+    "barcode": "WX007",
+    "name": "Klotz My206 Yellow And Green (7M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "WX008",
+    "barcode": "WX008",
+    "name": "Blue Maruni (7M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX009",
+    "barcode": "WX009",
+    "name": "Klotz Greyhound + Switchcraft Head (10M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 7,
+    "isAvailable": true
+  },
+  {
+    "id": "WX010",
+    "barcode": "WX010",
+    "name": "Samson Tourtek (10M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX011",
+    "barcode": "WX011",
+    "name": "Klotz MC5000 (10M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX012",
+    "barcode": "WX012",
+    "name": "Unmarked+Neutrik Head (12M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX013",
+    "barcode": "WX013",
+    "name": "Klotz MY206 (15M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WX014",
+    "barcode": "WX014",
+    "name": "Canare (20M)",
+    "category": "Wires",
+    "subtype": "XLR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ001",
+    "barcode": "WQ001",
+    "name": "Red Braided Cables",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ002",
+    "barcode": "WQ002",
+    "name": "Klotz L Cable (4.5M)",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ003",
+    "barcode": "WQ003",
+    "name": "Klotz Green Cable",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ004",
+    "barcode": "WQ004",
+    "name": "Red/Black Double L Cable",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ005",
+    "barcode": "WQ005",
+    "name": "D'Addario Cable",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WQ006",
+    "barcode": "WQ006",
+    "name": "Sunrise",
+    "category": "Wires",
+    "subtype": "QTR",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WP001",
+    "barcode": "WP001",
+    "name": "Uk 3 Pin",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 8,
+    "isAvailable": true
+  },
+  {
+    "id": "WP002",
+    "barcode": "WP002",
+    "name": "Us 2 Pin",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 7,
+    "isAvailable": true
+  },
+  {
+    "id": "WP003",
+    "barcode": "WP003",
+    "name": "Yamaha PA-30 (1 In Misc Box, 1 With Mixer)",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "WP004",
+    "barcode": "WP004",
+    "name": "Yamaha PA-20 (In Misc Box)",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WP005",
+    "barcode": "WP005",
+    "name": "Yamaha PA-10 (In Misc Box)",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WP006",
+    "barcode": "WP006",
+    "name": "Ammoon Mixer Adapter (With Mixer)",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WP007",
+    "barcode": "WP007",
+    "name": "Power Adapter Bar (5 Outlets)",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "WP008",
+    "barcode": "WP008",
+    "name": "Power Cable Reel",
+    "category": "Wires",
+    "subtype": "Power",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-029",
+    "barcode": "",
+    "name": "Blue Female Xlr To 1/4 Inch",
+    "category": "Wires",
+    "subtype": "Adaptors",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-030",
+    "barcode": "",
+    "name": "Yellow Female Xlr To 1/4 Inch",
+    "category": "Wires",
+    "subtype": "Adaptors",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-031",
+    "barcode": "",
+    "name": "Black Female Xlr To 1/4 Inch",
+    "category": "Wires",
+    "subtype": "Adaptors",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "WS001",
+    "barcode": "WS001",
+    "name": "Snake Cable",
+    "category": "Wires",
+    "subtype": "Snake",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "SA001",
+    "barcode": "SA001",
+    "name": "Mackie Thump 12A",
+    "category": "Speakers",
+    "subtype": "Active",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "SA002",
+    "barcode": "SA002",
+    "name": "Studiomaster VPX 10 Speakers (Active)",
+    "category": "Speakers",
+    "subtype": "Active",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "SA003",
+    "barcode": "SA003",
+    "name": "Yamaha Dbr 10 (Active)",
+    "category": "Speakers",
+    "subtype": "Active",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "SP001",
+    "barcode": "SP001",
+    "name": "Speaker System 400S",
+    "category": "Speakers",
+    "subtype": "Passive",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "-",
+    "barcode": "-",
+    "name": "Harmon Kardon Speaker (Given By Jun)",
+    "category": "Speakers",
+    "subtype": "Recreational",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-D001",
+    "barcode": "MIC-D001",
+    "name": "Shure SM58",
+    "category": "Microphones",
+    "subtype": "Dynamic",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-D002",
+    "barcode": "MIC-D002",
+    "name": "AKG D770",
+    "category": "Microphones",
+    "subtype": "Dynamic",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-D003",
+    "barcode": "MIC-D003",
+    "name": "Sennheiser E840S",
+    "category": "Microphones",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "-",
+    "barcode": "-",
+    "name": "Sennheiser Eoava",
+    "category": "Microphones",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-D004",
+    "barcode": "MIC-D004",
+    "name": "Akg D112 Drum Mic",
+    "category": "Microphones",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-C001",
+    "barcode": "MIC-C001",
+    "name": "Audio-Technica AT2020",
+    "category": "Microphones",
+    "subtype": "Condenser",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-C002",
+    "barcode": "MIC-C002",
+    "name": "Samson Co2 Condenser Mics",
+    "category": "Microphones",
+    "subtype": "Condenser",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-C003",
+    "barcode": "MIC-C003",
+    "name": "Akg C430 Mini Condenser Mics",
+    "category": "Microphones",
+    "subtype": "Condenser",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "-",
+    "barcode": "-",
+    "name": "Akg Sr 40 Receiver For Wireless Mic",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-A001",
+    "barcode": "MIC-A001",
+    "name": "Mic Grille",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-A002",
+    "barcode": "MIC-A002",
+    "name": "Mic Clips",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-A003",
+    "barcode": "MIC-A003",
+    "name": "Assorted Spare Parts",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "MIC-A004",
+    "barcode": "MIC-A004",
+    "name": "Wharfedale Pro",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MIC-A005",
+    "barcode": "MIC-A005",
+    "name": "Pop Filter",
+    "category": "Microphones",
+    "subtype": "Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "UKU001",
+    "barcode": "UKU001",
+    "name": "Prillante Basswood LT27 Ukulele",
+    "category": "Instrument",
+    "subtype": "Ukulele",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "UKU002",
+    "barcode": "UKU002",
+    "name": "anuenue Papa I Soprano-Electric",
+    "category": "Instrument",
+    "subtype": "Ukulele",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "UKU003",
+    "barcode": "UKU003",
+    "name": "Kala Satin Mahogany Tenor Ukulele",
+    "category": "Instrument",
+    "subtype": "Ukulele",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "UKU004",
+    "barcode": "UKU004",
+    "name": "Kala Travel Tenor Ukulele",
+    "category": "Instrument",
+    "subtype": "Ukulele",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "UKA001",
+    "barcode": "UKA001",
+    "name": "Ukulele Soft Case",
+    "category": "Instrument",
+    "subtype": "Ukulele Accessories",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "CG001",
+    "barcode": "CG001",
+    "name": "Maestro Alto",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "CG002",
+    "barcode": "CG002",
+    "name": "Maestro Bass",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "CG003",
+    "barcode": "CG003",
+    "name": "Suzuki",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "CG004",
+    "barcode": "CG004",
+    "name": "Yamaha CG112MC",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "CG005",
+    "barcode": "CG005",
+    "name": "Yukinobu Chai",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "CG006",
+    "barcode": "CG006",
+    "name": "Synchronium Classical",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "CG007",
+    "barcode": "CG007",
+    "name": "Yamaha C70",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "CG008",
+    "barcode": "CG008",
+    "name": "Yamaha C40",
+    "category": "Instrument",
+    "subtype": "Classical Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG001",
+    "barcode": "AG001",
+    "name": "Lag Tramontane T66DCE Acoustic Guitar",
+    "category": "Instrument",
+    "subtype": "Acoustic Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG002",
+    "barcode": "AG002",
+    "name": "Cort Earth 70E",
+    "category": "Instrument",
+    "subtype": "Acoustic Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG003",
+    "barcode": "AG003",
+    "name": "Cort CE300",
+    "category": "Instrument",
+    "subtype": "Acoustic Guitar",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG004",
+    "barcode": "AG004",
+    "name": "Ibanez AEQ2T",
+    "category": "Instrument",
+    "subtype": "Acoustic Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "SG001",
+    "barcode": "SG001",
+    "name": "Niibori",
+    "category": "Instrument",
+    "subtype": "Soprano Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG001",
+    "barcode": "EG001",
+    "name": "Washburn Nuno Bettencourt Signature N1 Electric Guitar",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG002",
+    "barcode": "EG002",
+    "name": "Epiphone",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "EG003",
+    "barcode": "EG003",
+    "name": "Gio Ibanez Guitar",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG004",
+    "barcode": "EG004",
+    "name": "Squier Stratocoaster Classic Vibe 70s",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG005",
+    "barcode": "EG005",
+    "name": "Aria-STG Series (Blue)",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG006",
+    "barcode": "EG006",
+    "name": "Squier Sunburst (Brown) Bullet Strat",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EG007",
+    "barcode": "EG007",
+    "name": "Squier Transparent Blue Affinity Strat",
+    "category": "Instrument",
+    "subtype": "Electric Guitars",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EB001",
+    "barcode": "EB001",
+    "name": "Gio Ibanez Bass",
+    "category": "Instrument",
+    "subtype": "Electric Bass",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EB002",
+    "barcode": "EB002",
+    "name": "Fender Player Precision Bass (Tidepool)",
+    "category": "Instrument",
+    "subtype": "Electric Bass",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "EB003",
+    "barcode": "EB003",
+    "name": "Fender Squier MB-4 Skull and Crossbone",
+    "category": "Instrument",
+    "subtype": "Electric Bass",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-080",
+    "barcode": "",
+    "name": "Elixir 16539 Nanoweb 80/20 Bronze Light Acoustic Guitar Strings",
+    "category": "Accessories",
+    "subtype": "Guitar Accessories",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-081",
+    "barcode": "",
+    "name": "Elixir 14677 Nanoweb Stainless Steel Electric Bass Strings",
+    "category": "Accessories",
+    "subtype": "Guitar Accessories",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-082",
+    "barcode": "",
+    "name": "Elixir 19052 Optiweb Electric Guitar Strings",
+    "category": "Accessories",
+    "subtype": "Guitar Accessories",
+    "workingQty": 10,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA001",
+    "barcode": "GBA001",
+    "name": "Maestro Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 5,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA002",
+    "barcode": "GBA002",
+    "name": "Sx Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "GBA003",
+    "barcode": "GBA003",
+    "name": "Ibanez Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA004",
+    "barcode": "GBA004",
+    "name": "Pedalboard Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA005",
+    "barcode": "GBA005",
+    "name": "Boss Ab-2 2-Way Selector",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA006",
+    "barcode": "GBA006",
+    "name": "Yukinoba Chai Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA007",
+    "barcode": "GBA007",
+    "name": "Rockbag by Warwick",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA008",
+    "barcode": "GBA008",
+    "name": "Fender Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA009",
+    "barcode": "GBA009",
+    "name": "Guitar Bag",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "GBA010",
+    "barcode": "GBA010",
+    "name": "Niibori Hard Case",
+    "category": "Instrument",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-093",
+    "barcode": "",
+    "name": "Kyser KG6BCA Quick Change Capo, Black Chrome",
+    "category": "Other",
+    "subtype": "Guitar/Bass Accessories",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "KEY001",
+    "barcode": "KEY001",
+    "name": "Korg Sv1-88 Stage Piano",
+    "category": "Instrument",
+    "subtype": "Keyboards",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "KEY002",
+    "barcode": "KEY002",
+    "name": "Casio Keyboard Ctk-3200",
+    "category": "Instrument",
+    "subtype": "Keyboards",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "KEY-A001",
+    "barcode": "KEY-A001",
+    "name": "Keyboard Damper",
+    "category": "Instrument",
+    "subtype": "Keyboards Accessories",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM001",
+    "barcode": "DRM001",
+    "name": "Mapex Bass Drum",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM002",
+    "barcode": "DRM002",
+    "name": "Mapex Floor Tom 14\"",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM003",
+    "barcode": "DRM003",
+    "name": "Mapex Rack Tom",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM004",
+    "barcode": "DRM004",
+    "name": "Mapex Snare",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM005",
+    "barcode": "DRM005",
+    "name": "Meinl Hihats",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM006",
+    "barcode": "DRM006",
+    "name": "Sabian Aax Freq Crash 18'",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM007",
+    "barcode": "DRM007",
+    "name": "Meinl Byzance 18\" Jazz Thin Crash",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM008",
+    "barcode": "DRM008",
+    "name": "Zildjian Zxt Medium Ride 20\"",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM009",
+    "barcode": "DRM009",
+    "name": "Hihat Stand",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM010",
+    "barcode": "DRM010",
+    "name": "Cymbal Stands",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "DRM011",
+    "barcode": "DRM011",
+    "name": "Drummer Stool",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-108",
+    "barcode": "",
+    "name": "22\" Remo Ambassador Bass Drum Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-109",
+    "barcode": "",
+    "name": "Zildjian Zxt Medium Thin Crash 16\"",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-110",
+    "barcode": "",
+    "name": "Paiste 14\" 201 Hihat Pair",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-111",
+    "barcode": "",
+    "name": "Mapex Crash Ride 18\"",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-112",
+    "barcode": "",
+    "name": "Zildjian Zxt 14\" Solid Hihat Pair",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-113",
+    "barcode": "",
+    "name": "Zildjian Zxt 10\" Flash Splash",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-114",
+    "barcode": "",
+    "name": "Mapex Small Tom Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-115",
+    "barcode": "",
+    "name": "Mapex Medium Tom Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-116",
+    "barcode": "",
+    "name": "Mapex Snare Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-117",
+    "barcode": "",
+    "name": "Remo Weatherking Emperor Bass Drum Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-118",
+    "barcode": "",
+    "name": "Remo Weatherking Emperor Snare Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-119",
+    "barcode": "",
+    "name": "Remo Weatherking Emperor Small Tom? Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-120",
+    "barcode": "",
+    "name": "Remo Gretsch Snare Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-121",
+    "barcode": "",
+    "name": "Evans Snare",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-122",
+    "barcode": "",
+    "name": "Evans 14\"  Snare Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-123",
+    "barcode": "",
+    "name": "Evans Bass Drum Head",
+    "category": "Instrument",
+    "subtype": "Drum Kit",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-124",
+    "barcode": "",
+    "name": "Cymbal Felt",
+    "category": "Instrument",
+    "subtype": "Drum Accessory",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-125",
+    "barcode": "",
+    "name": "Drum Sticks",
+    "category": "Instrument",
+    "subtype": "Drum Accessory",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-126",
+    "barcode": "",
+    "name": "Drum Key",
+    "category": "Instrument",
+    "subtype": "Drum Accessory",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-127",
+    "barcode": "",
+    "name": "Drum Carpet",
+    "category": "Instrument",
+    "subtype": "Drum Accessory",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-128",
+    "barcode": "",
+    "name": "Drum Shield",
+    "category": "Instrument",
+    "subtype": "Drum Accessory",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "ITEM-129",
+    "barcode": "",
+    "name": "Iron Cobra Case",
+    "category": "Instrument",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-130",
+    "barcode": "",
+    "name": "SB300 Wire Brush",
+    "category": "Instrument",
+    "subtype": "Drum Accessory/Sticks",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "PER001",
+    "barcode": "PER001",
+    "name": "Cajon W/Bag",
+    "category": "Instrument",
+    "subtype": "Percussion",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "-",
+    "barcode": "-",
+    "name": "Kazoo",
+    "category": "Instrument",
+    "subtype": "Percussion",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "PER002",
+    "barcode": "PER002",
+    "name": "Suzuki Triangle",
+    "category": "Instrument",
+    "subtype": "Percussion",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "PER003",
+    "barcode": "PER003",
+    "name": "Lp Tambourine",
+    "category": "Instrument",
+    "subtype": "Percussion",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG001",
+    "barcode": "AG001",
+    "name": "Laney LX12",
+    "category": "Amplifiers",
+    "subtype": "Guitar Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG002",
+    "barcode": "AG002",
+    "name": "Vox VT 40+",
+    "category": "Amplifiers",
+    "subtype": "Guitar Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG003",
+    "barcode": "AG003",
+    "name": "Vox AC10C1",
+    "category": "Amplifiers",
+    "subtype": "Guitar Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG004",
+    "barcode": "AG004",
+    "name": "Boss Katana 100",
+    "category": "Amplifiers",
+    "subtype": "Guitar Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AG005",
+    "barcode": "AG005",
+    "name": "Marshall MG50FX",
+    "category": "Amplifiers",
+    "subtype": "Guitar Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "-",
+    "barcode": "-",
+    "name": "Marshall Mg50Fx Footswitch",
+    "category": "Other",
+    "subtype": "",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "AB001",
+    "barcode": "AB001",
+    "name": "Ampeg BA115 Bass Amp",
+    "category": "Amplifiers",
+    "subtype": "Bass Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AB002",
+    "barcode": "AB002",
+    "name": "Laney RB8 Bass Amp",
+    "category": "Amplifiers",
+    "subtype": "Bass Amp",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-143",
+    "barcode": "",
+    "name": "Yamaha Mg10Xuf",
+    "category": "Mixers",
+    "subtype": "10 Channel Mixer",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-144",
+    "barcode": "",
+    "name": "Yamaha Mg124 Cx",
+    "category": "Mixers",
+    "subtype": "12 Channel Mixer",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-145",
+    "barcode": "",
+    "name": "Yamaha Mg124 C",
+    "category": "Mixers",
+    "subtype": "12 Channel Mixer",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-146",
+    "barcode": "",
+    "name": "Yamaha Mg206 C",
+    "category": "Mixers",
+    "subtype": "20 Channel Mixer",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-147",
+    "barcode": "",
+    "name": "Mackie Profx12",
+    "category": "Mixers",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-148",
+    "barcode": "",
+    "name": "Soundcraft Signature 10 Eu Mixing System",
+    "category": "Mixers",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-149",
+    "barcode": "",
+    "name": "Ammoon Mixer",
+    "category": "Mixers",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "ITEM-150",
+    "barcode": "",
+    "name": "Yamaha Stagepas 400 Bt (Mixer)",
+    "category": "Mixers",
+    "subtype": "Main",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "DI001",
+    "barcode": "DI001",
+    "name": "Alctron D1100 Active Di",
+    "category": "Auxillary Equipment",
+    "subtype": "DI Boxes",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "DI002",
+    "barcode": "DI002",
+    "name": "Whirlwind Edb1 Passive Di",
+    "category": "Auxillary Equipment",
+    "subtype": "DI Boxes",
+    "workingQty": 3,
+    "isAvailable": true
+  },
+  {
+    "id": "DI003",
+    "barcode": "DI003",
+    "name": "Klotz D10 Passive Di",
+    "category": "Auxillary Equipment",
+    "subtype": "DI Boxes",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "AI001",
+    "barcode": "AI001",
+    "name": "Tascam Us 800 Audio/Midi Interface",
+    "category": "Auxillary Equipment",
+    "subtype": "Audio Interfaces",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AI002",
+    "barcode": "AI002",
+    "name": "Presonus Audio Interface Box",
+    "category": "Auxillary Equipment",
+    "subtype": "Audio Interfaces",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "AI003",
+    "barcode": "AI003",
+    "name": "Scarlett 8I6 A1",
+    "category": "Auxillary Equipment",
+    "subtype": "Audio Interfaces",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "STD001",
+    "barcode": "STD001",
+    "name": "Music Score Stands",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "STD002",
+    "barcode": "STD002",
+    "name": "Foldable Scorestands",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 5,
+    "isAvailable": true
+  },
+  {
+    "id": "STD003",
+    "barcode": "STD003",
+    "name": "Speaker Stands",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "STD004",
+    "barcode": "STD004",
+    "name": "Mic Stands",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "STD005",
+    "barcode": "STD005",
+    "name": "Nomad Table Mic Stand",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "STD006",
+    "barcode": "STD006",
+    "name": "Guitar Stand",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "STD007",
+    "barcode": "STD007",
+    "name": "Guitar Rack (Fits 8)",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "STD008",
+    "barcode": "STD008",
+    "name": "Keyboard X Stand",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "STD009",
+    "barcode": "STD009",
+    "name": "Guitar Amp Stand",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "STD010",
+    "barcode": "STD010",
+    "name": "Foot Support Stands",
+    "category": "Auxillary Equipment",
+    "subtype": "Stands",
+    "workingQty": 7,
+    "isAvailable": true
+  },
+  {
+    "id": "HP001",
+    "barcode": "HP001",
+    "name": "Sony MDR-7506 1/4''",
+    "category": "Auxillary Equipment",
+    "subtype": "Headphones",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "HP002",
+    "barcode": "HP002",
+    "name": "Audio Technica ATH-M50x Professional Monitor Headphones",
+    "category": "Auxillary Equipment",
+    "subtype": "Headphones",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC001",
+    "barcode": "MISC001",
+    "name": "Black Acting Blocks",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 5,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC002",
+    "barcode": "MISC002",
+    "name": "Circular Stool",
+    "category": "Furniture",
+    "subtype": "",
+    "workingQty": 6,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC003",
+    "barcode": "MISC003",
+    "name": "High Tables",
+    "category": "Furniture",
+    "subtype": "",
+    "workingQty": 4,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC005",
+    "barcode": "MISC005",
+    "name": "Ikea High Stool",
+    "category": "Furniture",
+    "subtype": "",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC006",
+    "barcode": "MISC006",
+    "name": "Short Table",
+    "category": "Furniture",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC007",
+    "barcode": "MISC007",
+    "name": "Black Out Curtains",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 5,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC008",
+    "barcode": "MISC008",
+    "name": "Camera Tripod",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC009",
+    "barcode": "MISC009",
+    "name": "Assorted Arts And Craft Supplies/Materials",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 0,
+    "isAvailable": false
+  },
+  {
+    "id": "MISC010",
+    "barcode": "MISC010",
+    "name": "Foam Sound Isolation Panels (Tall)",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 2,
+    "isAvailable": true
+  },
+  {
+    "id": "MISC011",
+    "barcode": "MISC011",
+    "name": "Foam Sound Isolation Panel",
+    "category": "Misc",
+    "subtype": "",
+    "workingQty": 1,
+    "isAvailable": true
+  }
+]

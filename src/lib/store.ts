@@ -58,36 +58,25 @@ export const INITIAL_LICENSED_USERS: LicensedUser[] = [
   },
 ];
 
-export const INITIAL_RECURRING_SLOTS: RecurringSlot[] = [
-  {
-    id: 'rec-1',
-    dayOfWeek: 5, // Friday
-    startTime: '20:00',
-    endTime: '24:00',
-    title: 'tKaraoke Weekly Session',
-    assignedGroup: 'tKaraoke IG',
-    notes: 'CSC head has door access; loan equipment reserved.',
-  },
-  {
-    id: 'rec-2',
-    dayOfWeek: 3, // Wednesday
-    startTime: '19:00',
-    endTime: '21:00',
-    title: 'tGrapevine Podcast Recording',
-    assignedGroup: 'tGrapevine IG',
-    notes: 'Requires Shure SM7B/podcasting setup.',
-  },
-];
+// Note: Recurring IG equipment loans (tKaraoke, tGrapevine) are managed under Equipment Loans,
+// so the bandroom booking calendar remains completely open for student practices.
+export const INITIAL_RECURRING_SLOTS: RecurringSlot[] = [];
 
 export const INITIAL_EQUIPMENT_LOANS: EquipmentLoan[] = [
   {
     id: 'loan-1',
-    requesterName: 'Tancho House Committee',
-    telegramHandle: '@tancho_comm',
-    eventName: 'House Dinner & Acoustic Night',
+    requesterName: 'Valerie Wong',
+    telegramHandle: '@valerie_tancho',
+    committee: 'House',
+    purpose: 'Tancho House Acoustic Night',
+    eventName: 'Tancho House Acoustic Night',
+    basePackage: 'Set A',
+    equipmentList: ['2x Shure SM58', '2x 10m XLR Cables', '1x Mackie Thump 12A Speaker'],
     startDate: '2026-10-06',
+    startTime: '18:00',
     endDate: '2026-10-06',
-    equipmentList: ['2x Wireless Mics', '1x Portable PA Speaker', '2x XLR Cables'],
+    endTime: '22:00',
+    agreedToTerms: true,
     status: 'approved',
     createdAt: '2026-09-28',
   },
