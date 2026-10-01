@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import CalendarView from '@/components/CalendarView';
 import BookingModal from '@/components/BookingModal';
@@ -36,6 +36,18 @@ export default function Home() {
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; startTime: string } | null>(null);
   const [isConcertMode, setIsConcertMode] = useState(false);
   const [unreadTelegramCount, setUnreadTelegramCount] = useState(1);
+
+  // Sync loans from server / Supabase
+  useEffect(() => {
+    fetch('/api/loans')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.loans) && data.loans.length > 0) {
+          setLoans(data.loans);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // When a resident books on the calendar
   const handleConfirmBooking = (bookingData: Omit<Booking, 'id' | 'createdAt' | 'status'>) => {
@@ -185,6 +197,23 @@ export default function Home() {
 
     setTelegramMessages((prev) => [newMsg, ...prev]);
     setUnreadTelegramCount((c) => c + 1);
+
+    // Persist to server / Supabase
+    fetch('/api/loans', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(loanData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.loan) {
+          setLoans((prev) => [
+            data.loan,
+            ...prev.filter((l) => l.id !== newLoan.id && l.id !== data.loan.id),
+          ]);
+        }
+      })
+      .catch((err) => console.error('Failed to persist loan to API:', err));
   };
 
   return (
