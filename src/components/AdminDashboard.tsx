@@ -53,7 +53,7 @@ export default function AdminDashboard({
     const matchesSearch =
       u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.telegramHandle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.nusEmail.toLowerCase().includes(searchTerm.toLowerCase());
+      (u.nusEmail || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesHouse = selectedHouse === 'All' || u.house === selectedHouse;
     return matchesSearch && matchesHouse;
   });

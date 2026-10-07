@@ -22,6 +22,8 @@ export async function GET() {
           category: d.category,
           subtype: d.subtype || '',
           workingQty: d.working_qty ?? 0,
+          spoiltQty: d.spoilt_qty ?? 0,
+          notes: d.notes || '',
           isAvailable: (d.working_qty ?? 0) > 0,
         }));
       }

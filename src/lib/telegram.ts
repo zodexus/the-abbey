@@ -1,4 +1,4 @@
-import { Booking, TelegramSimulatedMessage } from './types';
+import { Booking, EquipmentLoan, TelegramSimulatedMessage } from './types';
 
 export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 export const TELEGRAM_QM_CHAT_ID = process.env.TELEGRAM_QM_CHAT_ID || '';
@@ -10,20 +10,35 @@ export const TELEGRAM_ARTS_CC_CHAT_ID = TELEGRAM_ABBEY_LICENSED_CHAT_ID;
  * Format DM sent directly to Quartermaster (@mezyyy)
  */
 export function formatQMDMMessage(booking: Booking): string {
-  const gear = booking.equipmentNeeds.length > 0 ? booking.equipmentNeeds.join(', ') : 'Standard backline';
   const unlockStatus = booking.needsDoorUnlock
-    ? '⚠️ Yes (door-opening message queued for Abbey Licensed 12h prior)'
+    ? '⚠️ Yes (requires someone to help unlock)'
     : 'No (has door access)';
 
   return (
-    `🎸 *New Abbey Booking*\n\n` +
+    `🎸 *New Abbey Booking Request*\n\n` +
     `📅 *Date:* ${booking.date}\n` +
     `⏰ *Time:* ${booking.startTime} – ${booking.endTime}\n` +
     `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
-    `🏠 *House:* ${booking.tembusuHouse}\n` +
-    `👥 *Band / Purpose:* ${booking.bandName} (${booking.purpose})\n` +
-    `🔌 *Gear:* ${gear}\n` +
-    `🔑 *Needs Unlock:* ${unlockStatus}`
+    `🎯 *Practice for / Purpose:* ${booking.purpose}\n` +
+    `🔑 *Needs Unlock:* ${unlockStatus}\n\n` +
+    `Tap below to approve or reject:`
+  );
+}
+
+/**
+ * Format Loan DM sent directly to Quartermaster (@mezyyy)
+ */
+export function formatQMLoanMessage(loan: EquipmentLoan): string {
+  return (
+    `📦 *New Equipment Loan Request*\n\n` +
+    `👤 *Requester:* ${loan.requesterName} (${loan.telegramHandle})\n` +
+    `🏛️ *Committee:* ${loan.committee}\n` +
+    `🎯 *Purpose:* ${loan.purpose}\n` +
+    `📅 *Dates:* ${loan.startDate} to ${loan.endDate}\n` +
+    `⏰ *Time:* ${loan.startTime || '18:00'} – ${loan.endTime || '22:00'}\n` +
+    `📦 *Package:* ${loan.basePackage}\n` +
+    `🔧 *Gear:* ${loan.equipmentList.join('; ') || 'None'}\n\n` +
+    `Tap below to approve or reject:`
   );
 }
 

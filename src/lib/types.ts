@@ -1,6 +1,6 @@
 export type TembusuHouse = 'Shan' | 'Ora' | 'Gaja' | 'Tancho' | 'Ponya';
 
-export type BookingStatus = 'confirmed' | 'checked_out' | 'cancelled';
+export type BookingStatus = 'pending' | 'confirmed' | 'checked_out' | 'cancelled';
 
 export interface Booking {
   id: string;
@@ -8,12 +8,12 @@ export interface Booking {
   startTime: string; // HH:mm (e.g. "14:00")
   endTime: string; // HH:mm (e.g. "16:00")
   residentName: string;
-  telegramHandle: string; // e.g. "@alextan"
-  nusEmail: string; // e.g. "alex@u.nus.edu"
-  tembusuHouse: TembusuHouse;
-  bandName: string;
-  purpose: 'Band Practice' | 'Concert Rehearsal' | 'Solo Jam' | 'IG Rehearsal' | 'Recording' | 'Other';
-  equipmentNeeds: string[];
+  telegramHandle: string; // e.g. "@mezyyy"
+  nusEmail?: string;
+  tembusuHouse?: string;
+  bandName?: string; // Backwards compatible
+  purpose: string; // "Practice for / Purpose"
+  equipmentNeeds?: string[];
   needsDoorUnlock: boolean; // Whether resident needs someone to unlock the Abbey
   status: BookingStatus;
   doorOpenerHandle?: string; // Telegram handle of Abbey Licensed member who claimed opening
@@ -26,9 +26,9 @@ export interface Booking {
 export interface LicensedUser {
   id: string;
   telegramHandle: string;
-  nusEmail: string;
+  nusEmail?: string;
   name: string;
-  house: TembusuHouse;
+  house?: string;
   licenseAY: string; // e.g. "AY26/27"
   status: 'active' | 'pending' | 'expired';
 }
@@ -50,15 +50,30 @@ export interface InventoryItem {
   category: string;
   subtype: string;
   workingQty: number;
+  spoiltQty?: number;
+  notes?: string;
   isAvailable: boolean;
 }
 
-export interface RecurringEquipmentLoan {
+export interface RoomCheckoutPhoto {
   id: string;
+  bookingId?: string;
+  residentName: string;
+  telegramHandle: string;
+  photoUrl: string;
+  timestamp: string;
+  notes?: string;
+}
+
+export interface RecurringEquipmentLoan {
+  id?: string;
   groupName: string;
   schedule: string;
   equipmentList: string[];
-  notes: string;
+  notes?: string;
+  dayOfWeek?: string;
+  timeRange?: string;
+  items?: string[];
 }
 
 export interface EquipmentLoan {
@@ -76,21 +91,19 @@ export interface EquipmentLoan {
   endDate: string; // End Date of Loan
   endTime?: string; // End Time of Loan
   agreedToTerms: boolean;
-  status: 'pending' | 'approved' | 'rejected' | 'returned';
+  status: 'pending' | 'approved' | 'collected' | 'returned' | 'rejected';
   createdAt: string;
 }
 
 export interface TelegramSimulatedMessage {
   id: string;
   bookingId?: string;
-  chatType: 'group_abbey_licensed' | 'direct_message_qm' | 'direct_message';
+  chatType: 'direct_message_qm' | 'group_abbey_licensed' | 'direct_message_resident';
   recipientHandle?: string;
   title: string;
   body: string;
   timestamp: string;
-  scheduledDispatchNote?: string;
   hasDoorOpenAction?: boolean;
+  scheduledDispatchNote?: string;
   claimedBy?: string;
-  hasPhotoCheckoutAction?: boolean;
-  photoUrl?: string;
 }

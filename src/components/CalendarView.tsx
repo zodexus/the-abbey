@@ -124,11 +124,11 @@ export default function CalendarView({
                       timeStr < r.endTime
                   );
 
-                  // 2. Check for confirmed booking on this date & time
+                  // 2. Check for confirmed booking on this date & time (pending approval bookings do not block yet)
                   const booking = bookings.find(
                     (b) =>
                       b.date === day.dateStr &&
-                      b.status !== 'cancelled' &&
+                      (b.status === 'confirmed' || b.status === 'checked_out') &&
                       timeStr >= b.startTime &&
                       timeStr < b.endTime
                   );
@@ -164,11 +164,8 @@ export default function CalendarView({
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-stone-200 truncate">
-                            {booking.bandName}
-                          </span>
-                          <span className="text-[9px] text-stone-400">
-                            {booking.tembusuHouse}
+                          <span className="text-[11px] font-medium text-stone-200 truncate" title={booking.purpose}>
+                            {booking.purpose || 'Band Practice'}
                           </span>
                         </div>
 

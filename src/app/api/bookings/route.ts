@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       purpose: purpose || 'Band Practice',
       equipmentNeeds: equipmentNeeds || [],
       needsDoorUnlock: Boolean(needsDoorUnlock),
-      status: 'confirmed',
+      status: 'pending',
       createdAt: new Date().toISOString(),
     };
 
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         purpose: purpose || 'Band Practice',
         equipment_needs: equipmentNeeds || [],
         needs_door_unlock: Boolean(needsDoorUnlock),
-        status: 'confirmed',
+        status: 'pending',
       });
 
       if (error) {
@@ -116,14 +116,57 @@ export async function POST(request: Request) {
       fallbackBookings = [newBooking, ...fallbackBookings];
     }
 
-    // 1. Send DM to Quartermaster (@mezyyy)
+    // 1. Send DM to Quartermaster (@mezyyy) with interactive approval buttons
     if (TELEGRAM_QM_CHAT_ID) {
       const qmMsg = formatQMDMMessage(newBooking);
-      await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg);
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: '✅ Approve Booking', callback_data: `approve_booking:${newId}` },
+            { text: '❌ Reject', callback_data: `reject_booking:${newId}` },
+          ],
+        ],
+      };
+      await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg, replyMarkup);
     }
 
     return NextResponse.json({ success: true, booking: newBooking });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create booking' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, status, doorOpenerHandle } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 });
+    }
+
+    const updates: any = {};
+    if (status) updates.status = status;
+    if (doorOpenerHandle) {
+      updates.door_opener_handle = doorOpenerHandle;
+      updates.door_claimed_at = new Date().toISOString();
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('bookings')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+    } else {
+      fallbackBookings = fallbackBookings.map((b) =>
+        b.id === id ? { ...b, ...updates } : b
+      );
+    }
+
+    return NextResponse.json({ success: true, id, updates });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to update booking' }, { status: 500 });
   }
 }

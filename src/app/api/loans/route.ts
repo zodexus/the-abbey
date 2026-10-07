@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { EquipmentLoan } from '@/lib/types';
 import { INITIAL_EQUIPMENT_LOANS } from '@/lib/store';
-import { sendTelegramMessage, formatQMDMMessage, TELEGRAM_QM_CHAT_ID } from '@/lib/telegram';
+import { sendTelegramMessage, formatQMDMMessage, formatQMLoanMessage, TELEGRAM_QM_CHAT_ID } from '@/lib/telegram';
 
 // In-memory fallback if Supabase is not yet connected
 let fallbackLoans: EquipmentLoan[] = [...INITIAL_EQUIPMENT_LOANS];
@@ -117,15 +117,16 @@ export async function POST(request: Request) {
 
     // Direct Telegram DM to QM if bot token is active
     if (TELEGRAM_QM_CHAT_ID) {
-      const qmMsg =
-        `📦 *New Equipment Loan Request*\n\n` +
-        `👤 *Requester:* ${newLoanObj.requesterName} (${newLoanObj.telegramHandle})\n` +
-        `🏛️ *Committee:* ${newLoanObj.committee}\n` +
-        `🎯 *Purpose:* ${newLoanObj.purpose}\n` +
-        `📅 *Dates:* ${newLoanObj.startDate} to ${newLoanObj.endDate}\n` +
-        `📦 *Package:* ${newLoanObj.basePackage}\n` +
-        `🔧 *Gear:* ${newLoanObj.equipmentList.join('; ')}`;
-      await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg);
+      const qmMsg = formatQMLoanMessage(newLoanObj);
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: '✅ Approve Loan', callback_data: `approve_loan:${newLoanObj.id}` },
+            { text: '❌ Reject', callback_data: `reject_loan:${newLoanObj.id}` },
+          ],
+        ],
+      };
+      await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg, replyMarkup);
     }
 
     return NextResponse.json({ success: true, loan: newLoanObj });

@@ -24,54 +24,69 @@ export interface BasePackage {
   id: 'Set A' | 'Set B' | 'Set C' | 'None';
   name: string;
   tagline: string;
+  image?: string;
+  specs: string[];
+  bestFor: string[];
   items: string[];
 }
 
 export const BASE_PACKAGES: BasePackage[] = [
   {
     id: 'Set A',
-    name: 'Set A (Acoustic / Speech)',
-    tagline: 'Ideal for floor talks, acoustic jams, small house gatherings',
+    name: 'SET A',
+    tagline: 'Yamaha Powered Mixer + 2 Speakers',
+    image: '/images/packages/set_a.png',
+    specs: ['Up to 6 inputs (4 XLRs)', 'Up to 4 Mics and BGM'],
+    bestFor: [
+      'Small events that only requires BGM and Mics',
+      'Small performances that requires a few mics and instruments',
+    ],
     items: [
-      '2x Shure SM58 Vocal Mics',
-      '2x 10m XLR Cables',
-      '1x Mackie Thump 12A Active Speaker',
-      '1x UK 3-Pin Power Cable',
-      '2x Heavy-duty Boom Mic Stands',
+      'Yamaha Powered Mixer (Stagepas)',
+      '2x Passive PA Speakers',
+      'Up to 4x Vocal Mics',
+      'XLR Cables + Speaker Cables',
     ],
   },
   {
     id: 'Set B',
-    name: 'Set B (Standard Gig / Event)',
-    tagline: 'Ideal for courtyard performances, dinners, open mic events',
+    name: 'SET B',
+    tagline: 'Armoon 7-Channel Mixer + 2 Mackie Speakers',
+    image: '/images/packages/set_b.png',
+    specs: ['Up to 7 inputs (6 XLRs)', 'Able to support a band on top of emcees'],
+    bestFor: [
+      'Performances that requires more instruments / mics',
+      'Able to support a band on top of emcees',
+    ],
     items: [
-      '2x Active PA Speakers (Mackie Thump 12A / Studiomaster)',
-      '2x Shure SM58 Vocal Mics',
-      '2x 10m XLR Cables',
-      '2x 1/4" Instrument Cables',
-      '2x Boom Mic Stands',
-      '1x Power Extension Bar (5 Outlets)',
+      'Armoon Professional 7-Channel Mixer',
+      '2x Mackie Thump 12A Active Speakers',
+      'XLR Cables + Power Extension',
+      'Boom Mic Stands',
     ],
   },
   {
     id: 'Set C',
-    name: 'Set C (Full Performance)',
-    tagline: 'Ideal for full band setups, multi-instrument IG showcases',
+    name: 'SET C',
+    tagline: 'Direct Speaker Setup (1 Mackie + 2 Mics)',
+    image: '/images/packages/set_c.png',
+    specs: ['Up to 2 inputs (2 XLRs / 1/4" Jack)', 'No external mixer needed'],
+    bestFor: [
+      'Events that requires only Mics and Speakers',
+      'Quick announcements, small gatherings, floor talks',
+    ],
     items: [
-      '2x Active PA Speakers',
-      '4x Shure SM58 Vocal Mics',
-      '4x 10m XLR Cables',
-      '2x Whirlwind Edb1 Passive DI Boxes',
-      '4x 1/4" Instrument Cables',
-      '4x Boom Mic Stands',
-      '1x Yamaha MG10XUF 10-Channel Mixer',
-      '2x Power Extension Bars',
+      '1x Mackie Thump 12A Active Speaker',
+      '2x Shure SM58 Vocal Mics (Direct-to-speaker)',
+      '2x XLR Cables + UK 3-Pin Power Cable',
     ],
   },
   {
     id: 'None',
     name: 'Custom Gear Only (None)',
     tagline: 'Select specific microphones, cables, or instruments below',
+    specs: ['Individual gear selection'],
+    bestFor: ['When you only need specific items or cables'],
     items: [],
   },
 ];

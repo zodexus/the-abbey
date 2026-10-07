@@ -6,7 +6,7 @@ import CalendarView from '@/components/CalendarView';
 import BookingModal from '@/components/BookingModal';
 import TelegramDutyDrawer from '@/components/TelegramDutyDrawer';
 import EquipmentLoanSection from '@/components/EquipmentLoanSection';
-import AdminDashboard from '@/components/AdminDashboard';
+import TechPortal from '@/components/TechPortal';
 import {
   Booking,
   LicensedUser,
@@ -21,10 +21,10 @@ import {
   INITIAL_EQUIPMENT_LOANS,
   INITIAL_TELEGRAM_MESSAGES,
 } from '@/lib/store';
-import { Key, Send, ShieldCheck, Sparkles } from 'lucide-react';
+import { Lock, KeyRound, AlertCircle, Sparkles, Send } from 'lucide-react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'loans' | 'licenses' | 'admin'>('calendar');
+  const [activeTab, setActiveTab] = useState<'schedule' | 'loans' | 'tech_portal'>('schedule');
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
   const [licensedUsers, setLicensedUsers] = useState<LicensedUser[]>(INITIAL_LICENSED_USERS);
   const [recurringSlots, setRecurringSlots] = useState<RecurringSlot[]>(INITIAL_RECURRING_SLOTS);
@@ -34,22 +34,65 @@ export default function Home() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isTelegramDrawerOpen, setIsTelegramDrawerOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; startTime: string } | null>(null);
-  const [isConcertMode, setIsConcertMode] = useState(false);
-  const [unreadTelegramCount, setUnreadTelegramCount] = useState(1);
+  const [unreadTelegramCount, setUnreadTelegramCount] = useState(0);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
 
-  // Sync initial data from Supabase / API
+  // Tech Member Auth state
+  const [isTechAuthenticated, setIsTechAuthenticated] = useState(false);
+  const [techPasscode, setTechPasscode] = useState('');
+  const [passcodeError, setPasscodeError] = useState(false);
+
+  // Check persisted tech auth on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedAuth = localStorage.getItem('abbey_tech_auth');
+      if (savedAuth === 'true') {
+        setIsTechAuthenticated(true);
+      }
+    }
+  }, []);
+
+  const refreshLoans = () => {
+    fetch('/api/loans')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.loans)) {
+          setLoans(data.loans);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const refreshLicenses = () => {
+    fetch('/api/licenses')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.users)) {
+          setLicensedUsers(data.users);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const refreshBookings = () => {
+    fetch('/api/bookings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.bookings)) {
+          setBookings(data.bookings);
+        }
+      })
+      .catch(() => {});
+  };
+
+  // Sync initial live data from Supabase
   useEffect(() => {
     fetch('/api/loans')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          if (data.source === 'supabase') {
-            setIsSupabaseConnected(true);
-            setLoans(data.loans || []);
-          } else if (Array.isArray(data.loans) && data.loans.length > 0) {
-            setLoans(data.loans);
-          }
+          if (data.source === 'supabase') setIsSupabaseConnected(true);
+          if (Array.isArray(data.loans)) setLoans(data.loans);
         }
       })
       .catch(() => {});
@@ -58,12 +101,8 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          if (data.source === 'supabase') {
-            setIsSupabaseConnected(true);
-            setBookings(data.bookings || []);
-          } else if (Array.isArray(data.bookings) && data.bookings.length > 0) {
-            setBookings(data.bookings);
-          }
+          if (data.source === 'supabase') setIsSupabaseConnected(true);
+          if (Array.isArray(data.bookings)) setBookings(data.bookings);
         }
       })
       .catch(() => {});
@@ -72,24 +111,20 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          if (data.source === 'supabase') {
-            setIsSupabaseConnected(true);
-            setLicensedUsers(data.users || []);
-          } else if (Array.isArray(data.users) && data.users.length > 0) {
-            setLicensedUsers(data.users);
-          }
+          if (data.source === 'supabase') setIsSupabaseConnected(true);
+          if (Array.isArray(data.users)) setLicensedUsers(data.users);
         }
       })
       .catch(() => {});
   }, []);
 
-  // When a resident books on the calendar
+  // When a student requests a booking slot
   const handleConfirmBooking = (bookingData: Omit<Booking, 'id' | 'createdAt' | 'status'>) => {
     const newId = `book-${Date.now()}`;
     const newBooking: Booking = {
       ...bookingData,
       id: newId,
-      status: 'confirmed',
+      status: 'pending', // Pending Quartermaster approval!
       createdAt: new Date().toISOString(),
     };
 
@@ -112,46 +147,31 @@ export default function Home() {
       })
       .catch((err) => console.error('Failed to persist booking:', err));
 
-    const gearList =
-      bookingData.equipmentNeeds.length > 0
-        ? bookingData.equipmentNeeds.join(', ')
-        : 'Standard backline';
-
-    // 1. Direct Message to Quartermaster (@mezyyy)
+    // Simulated Telegram message to QM
     const qmMsg: TelegramSimulatedMessage = {
       id: `tg-qm-${Date.now()}`,
       bookingId: newId,
       chatType: 'direct_message_qm',
       recipientHandle: '@mezyyy',
-      title: 'DM to Quartermaster (@mezyyy)',
-      body: `🎸 *New Abbey Booking*\n\n📅 Date: ${bookingData.date}\n⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n🏠 House: ${bookingData.tembusuHouse}\n👥 Band: ${bookingData.bandName} (${bookingData.purpose})\n🔌 Gear: ${gearList}\n🔑 Door Unlock: ${bookingData.needsDoorUnlock ? 'Requested (Dispatches to Abbey Licensed 12h prior)' : 'Not needed (Resident has door access)'}`,
+      title: '🎸 Booking Request Sent to QM (@mezyyy)',
+      body:
+        `🎸 *New Abbey Booking Request*\n\n` +
+        `📅 Date: ${bookingData.date}\n` +
+        `⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n` +
+        `👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n` +
+        `🎯 Purpose: ${bookingData.purpose}\n` +
+        `🔑 Needs Unlock: ${bookingData.needsDoorUnlock ? 'Yes (will notify group chat)' : 'No (has door access)'}\n\n` +
+        `Status: Pending QM Approval`,
       timestamp: 'Just now',
     };
 
-    const newMessages: TelegramSimulatedMessage[] = [qmMsg];
-
-    // 2. If door unlock is checked, schedule message to Abbey Licensed group 12 hours prior
-    if (bookingData.needsDoorUnlock) {
-      const groupMsg: TelegramSimulatedMessage = {
-        id: `tg-grp-${Date.now()}`,
-        bookingId: newId,
-        chatType: 'group_abbey_licensed',
-        title: 'Abbey Licensed Group (Door Duty)',
-        body: `🎸 *Abbey Booking — Unlock Needed*\n\n📅 Date: ${bookingData.date}\n⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n🏠 House: ${bookingData.tembusuHouse}\n👥 Band: ${bookingData.bandName}\n🔌 Gear: ${gearList}\n\nCan anyone in hall unlock the Abbey?`,
-        timestamp: 'Scheduled (12h prior)',
-        scheduledDispatchNote: 'Dispatches 12 hours before slot',
-        hasDoorOpenAction: true,
-      };
-      newMessages.push(groupMsg);
-    }
-
-    setTelegramMessages((prev) => [...newMessages, ...prev]);
-    setUnreadTelegramCount((prev) => prev + newMessages.length);
+    setTelegramMessages((prev) => [qmMsg, ...prev]);
+    setUnreadTelegramCount((c) => c + 1);
     setIsBookingModalOpen(false);
     setIsTelegramDrawerOpen(true);
   };
 
-  // When an Abbey Licensed member taps "I can open the door"
+  // Door claim handler
   const handleClaimDoor = (bookingId: string, claimerHandle: string) => {
     setBookings((prev) =>
       prev.map((b) =>
@@ -165,21 +185,20 @@ export default function Home() {
       )
     );
 
-    // Update Telegram message state
     setTelegramMessages((prev) =>
       prev.map((m) =>
         m.bookingId === bookingId
           ? {
               ...m,
               claimedBy: claimerHandle,
-              body: `${m.body}\n\n✅ *CLAIMED BY:* ${claimerHandle} (Door Opener)`,
+              body: `${m.body}\n\n✅ *DOOR CLAIMED BY:* ${claimerHandle}`,
             }
           : m
       )
     );
   };
 
-  // When resident sends checkout room photo
+  // Checkout photo handler
   const handleCheckoutPhoto = (bookingId: string, photoUrl: string) => {
     setBookings((prev) =>
       prev.map((b) =>
@@ -200,42 +219,6 @@ export default function Home() {
     setIsBookingModalOpen(true);
   };
 
-  const handleAddLicense = (user: Omit<LicensedUser, 'id'>) => {
-    const newUser: LicensedUser = {
-      ...user,
-      id: `lic-${Date.now()}`,
-    };
-    setLicensedUsers((prev) => [newUser, ...prev]);
-
-    fetch('/api/licenses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newUser),
-    }).catch(() => {});
-  };
-
-  const handleBatchAddLicenses = (newUsers: Array<Omit<LicensedUser, 'id'>>) => {
-    const entries: LicensedUser[] = newUsers.map((u, i) => ({
-      ...u,
-      id: `lic-${Date.now()}-${i}`,
-    }));
-    setLicensedUsers((prev) => [...entries, ...prev]);
-
-    fetch('/api/licenses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ users: entries }),
-    }).catch(() => {});
-  };
-
-  const handleDeleteLicense = (id: string) => {
-    setLicensedUsers((prev) => prev.filter((u) => u.id !== id));
-
-    fetch(`/api/licenses?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    }).catch(() => {});
-  };
-
   const handleRequestLoan = (loanData: Omit<EquipmentLoan, 'id' | 'createdAt' | 'status'>) => {
     const newLoan: EquipmentLoan = {
       ...loanData,
@@ -250,22 +233,22 @@ export default function Home() {
       id: `msg-${Date.now()}`,
       chatType: 'direct_message_qm',
       recipientHandle: '@mezyyy',
-      title: '📦 New Equipment Loan Request',
+      title: '📦 Loan Request Sent to QM (@mezyyy)',
       body:
         `📦 *New Equipment Loan Request*\n\n` +
-        `👤 *Requester:* ${newLoan.requesterName} (${newLoan.telegramHandle})\n` +
-        `🏛️ *Committee:* ${newLoan.committee || 'Resident'}\n` +
-        `🎯 *Purpose:* ${newLoan.purpose}\n` +
-        `📅 *Dates:* ${newLoan.startDate} to ${newLoan.endDate}\n` +
-        `📦 *Package:* ${newLoan.basePackage}\n` +
-        `🔧 *Gear:* ${newLoan.equipmentList.join('; ')}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        `👤 Requester: ${newLoan.requesterName} (${newLoan.telegramHandle})\n` +
+        `🏛️ Committee: ${newLoan.committee || 'Resident'}\n` +
+        `🎯 Purpose: ${newLoan.purpose}\n` +
+        `📅 Dates: ${newLoan.startDate} to ${newLoan.endDate}\n` +
+        `📦 Package: ${newLoan.basePackage}\n` +
+        `🔧 Gear: ${newLoan.equipmentList.join('; ')}\n\n` +
+        `Status: Pending QM Approval`,
+      timestamp: 'Just now',
     };
 
     setTelegramMessages((prev) => [newMsg, ...prev]);
     setUnreadTelegramCount((c) => c + 1);
 
-    // Persist to server / Supabase
     fetch('/api/loans', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -280,16 +263,36 @@ export default function Home() {
           ]);
         }
       })
-      .catch((err) => console.error('Failed to persist loan to API:', err));
+      .catch((err) => console.error('Failed to persist loan:', err));
+  };
+
+  // Tech passcode check
+  const handleTechLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = techPasscode.trim().toLowerCase();
+    if (clean === 'abbeytech' || clean === 'admin' || clean === 'mezyyy') {
+      setIsTechAuthenticated(true);
+      setPasscodeError(false);
+      localStorage.setItem('abbey_tech_auth', 'true');
+    } else {
+      setPasscodeError(true);
+    }
+  };
+
+  const handleTechLogout = () => {
+    setIsTechAuthenticated(false);
+    localStorage.removeItem('abbey_tech_auth');
+    setActiveTab('schedule');
   };
 
   return (
     <div className="min-h-screen bg-[#101216] text-stone-200 flex flex-col font-sans">
-      {/* Navbar */}
+      {/* Navbar with 2 public pages + Tech Portal button */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         isSupabaseConnected={isSupabaseConnected}
+        isTechAuthenticated={isTechAuthenticated}
         onOpenBookingModal={() => {
           setSelectedSlot(null);
           setIsBookingModalOpen(true);
@@ -298,47 +301,90 @@ export default function Home() {
           setIsTelegramDrawerOpen(!isTelegramDrawerOpen);
           setUnreadTelegramCount(0);
         }}
-        isConcertMode={isConcertMode}
         unreadTelegramCount={unreadTelegramCount}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8">
-        {activeTab === 'calendar' && (
+        {/* Page 1: Schedule */}
+        {activeTab === 'schedule' && (
           <CalendarView
             bookings={bookings}
             recurringSlots={recurringSlots}
             onSelectSlot={handleSelectSlot}
-            isConcertMode={isConcertMode}
+            isConcertMode={false}
           />
         )}
 
+        {/* Page 2: Equipment Loaning */}
         {activeTab === 'loans' && (
-          <EquipmentLoanSection loans={loans} onRequestLoan={handleRequestLoan} />
-        )}
-
-        {activeTab === 'licenses' && (
-          <AdminDashboard
-            bookings={bookings}
+          <EquipmentLoanSection
             licensedUsers={licensedUsers}
-            onAddLicense={handleAddLicense}
-            onBatchAddLicenses={handleBatchAddLicenses}
-            onDeleteLicense={handleDeleteLicense}
-            isConcertMode={isConcertMode}
-            onToggleConcertMode={() => setIsConcertMode(!isConcertMode)}
+            onRequestLoan={handleRequestLoan}
           />
         )}
 
-        {activeTab === 'admin' && (
-          <AdminDashboard
-            bookings={bookings}
-            licensedUsers={licensedUsers}
-            onAddLicense={handleAddLicense}
-            onBatchAddLicenses={handleBatchAddLicenses}
-            onDeleteLicense={handleDeleteLicense}
-            isConcertMode={isConcertMode}
-            onToggleConcertMode={() => setIsConcertMode(!isConcertMode)}
-          />
+        {/* Hidden Page: Tech Member Portal */}
+        {activeTab === 'tech_portal' && (
+          <div>
+            {!isTechAuthenticated ? (
+              <div className="max-w-md mx-auto mt-12 bg-[#14171d] border border-[#242933] rounded-2xl p-6 shadow-2xl text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center justify-center mx-auto">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-stone-100">
+                    Tech Team Portal Login
+                  </h2>
+                  <p className="text-xs text-stone-400 mt-1">
+                    Sign in to edit equipment logs, inspect check-out photos, review loans, and amend the licensing registry.
+                  </p>
+                </div>
+
+                <form onSubmit={handleTechLogin} className="space-y-3 pt-2">
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 absolute left-3 top-3 text-stone-500" />
+                    <input
+                      type="password"
+                      placeholder="Enter tech team passcode..."
+                      value={techPasscode}
+                      onChange={(e) => {
+                        setTechPasscode(e.target.value);
+                        setPasscodeError(false);
+                      }}
+                      required
+                      className="w-full bg-[#181c24] border border-[#282d38] rounded-xl pl-9 pr-3 py-2 text-xs text-stone-200 placeholder-stone-600 focus:outline-none focus:border-stone-400"
+                    />
+                  </div>
+
+                  {passcodeError && (
+                    <div className="text-red-400 text-[11px] flex items-center justify-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>Incorrect passcode. Check with Quartermaster (@mezyyy).</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-2 rounded-xl bg-stone-200 hover:bg-white text-stone-900 font-semibold text-xs transition-colors shadow-sm"
+                  >
+                    Enter Tech Portal
+                  </button>
+                  <p className="text-[10px] text-stone-500 pt-1">
+                    Default access: <code className="text-stone-400 bg-stone-900 px-1 py-0.5 rounded">abbeytech</code>
+                  </p>
+                </form>
+              </div>
+            ) : (
+              <TechPortal
+                onLogout={handleTechLogout}
+                licensedUsers={licensedUsers}
+                onRefreshLicenses={refreshLicenses}
+                loans={loans}
+                onRefreshLoans={refreshLoans}
+              />
+            )}
+          </div>
         )}
       </main>
 
@@ -350,7 +396,7 @@ export default function Home() {
         defaultStartTime={selectedSlot?.startTime}
         licensedUsers={licensedUsers}
         onConfirmBooking={handleConfirmBooking}
-        isConcertMode={isConcertMode}
+        isConcertMode={false}
       />
 
       {/* Telegram Live Duty & Check-out Simulation Drawer */}
