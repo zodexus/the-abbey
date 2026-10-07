@@ -10,6 +10,7 @@ interface NavbarProps {
   onToggleTelegramDrawer: () => void;
   isConcertMode: boolean;
   unreadTelegramCount?: number;
+  isSupabaseConnected?: boolean;
 }
 
 export default function Navbar({
@@ -19,6 +20,7 @@ export default function Navbar({
   onToggleTelegramDrawer,
   isConcertMode,
   unreadTelegramCount = 0,
+  isSupabaseConnected = false,
 }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 bg-[#121418]/90 backdrop-blur-md border-b border-[#232730] px-4 lg:px-8 py-3 transition-all">
@@ -33,6 +35,16 @@ export default function Navbar({
               <div className="flex items-center space-x-2">
                 <span className="font-semibold text-base text-stone-100 tracking-tight">The Abbey</span>
                 <span className="text-[11px] text-stone-400">Tembusu</span>
+                {isSupabaseConnected ? (
+                  <span className="flex items-center gap-1.5 text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-2 py-0.5 rounded-full font-medium" title="Live Supabase PostgreSQL Connected">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Supabase Live
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-stone-400 bg-stone-800/50 border border-stone-700/50 px-2 py-0.5 rounded-full">
+                    Demo Mode
+                  </span>
+                )}
                 {isConcertMode && (
                   <span className="text-[10px] bg-rose-950/60 text-rose-300 px-2 py-0.5 rounded-full border border-rose-800/40">
                     Concert Mode

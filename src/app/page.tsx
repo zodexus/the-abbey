@@ -36,14 +36,20 @@ export default function Home() {
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; startTime: string } | null>(null);
   const [isConcertMode, setIsConcertMode] = useState(false);
   const [unreadTelegramCount, setUnreadTelegramCount] = useState(1);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
 
   // Sync initial data from Supabase / API
   useEffect(() => {
     fetch('/api/loans')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.loans) && data.loans.length > 0) {
-          setLoans(data.loans);
+        if (data.success) {
+          if (data.source === 'supabase') {
+            setIsSupabaseConnected(true);
+            setLoans(data.loans || []);
+          } else if (Array.isArray(data.loans) && data.loans.length > 0) {
+            setLoans(data.loans);
+          }
         }
       })
       .catch(() => {});
@@ -51,8 +57,13 @@ export default function Home() {
     fetch('/api/bookings')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.bookings) && data.bookings.length > 0) {
-          setBookings(data.bookings);
+        if (data.success) {
+          if (data.source === 'supabase') {
+            setIsSupabaseConnected(true);
+            setBookings(data.bookings || []);
+          } else if (Array.isArray(data.bookings) && data.bookings.length > 0) {
+            setBookings(data.bookings);
+          }
         }
       })
       .catch(() => {});
@@ -60,8 +71,13 @@ export default function Home() {
     fetch('/api/licenses')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.users) && data.users.length > 0) {
-          setLicensedUsers(data.users);
+        if (data.success) {
+          if (data.source === 'supabase') {
+            setIsSupabaseConnected(true);
+            setLicensedUsers(data.users || []);
+          } else if (Array.isArray(data.users) && data.users.length > 0) {
+            setLicensedUsers(data.users);
+          }
         }
       })
       .catch(() => {});
@@ -273,6 +289,7 @@ export default function Home() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        isSupabaseConnected={isSupabaseConnected}
         onOpenBookingModal={() => {
           setSelectedSlot(null);
           setIsBookingModalOpen(true);

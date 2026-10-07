@@ -13,7 +13,7 @@ export async function GET() {
         .select('*')
         .order('name', { ascending: true });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const users: LicensedUser[] = data.map((d: any) => ({
           id: d.id,
           telegramHandle: d.telegram_handle,
