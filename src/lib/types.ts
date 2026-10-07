@@ -30,6 +30,7 @@ export interface LicensedUser {
   name: string;
   house?: string;
   licenseAY: string; // e.g. "AY26/27"
+  dateRegistered?: string; // e.g. "19/08/2026"
   status: 'active' | 'pending' | 'expired';
 }
 

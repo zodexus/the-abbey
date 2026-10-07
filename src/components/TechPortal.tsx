@@ -6,7 +6,6 @@ import {
   InventoryItem,
   LicensedUser,
   RoomCheckoutPhoto,
-  TembusuHouse,
 } from '@/lib/types';
 import {
   Wrench,
@@ -53,8 +52,6 @@ const INVENTORY_CATEGORIES = [
   'Instrument',
 ];
 
-const HOUSES: TembusuHouse[] = ['Shan', 'Ora', 'Gaja', 'Tancho', 'Ponya'];
-
 export default function TechPortal({
   onLogout,
   licensedUsers,
@@ -83,11 +80,19 @@ export default function TechPortal({
   const [newPhotoNotes, setNewPhotoNotes] = useState('');
   const [showAddPhotoModal, setShowAddPhotoModal] = useState(false);
 
+  // Helper for DD/MM/YYYY
+  const getTodayFormatted = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${now.getFullYear()}`;
+  };
+
   // --- TAB 5: Licensing Registry State ---
   const [regName, setRegName] = useState('');
   const [regHandle, setRegHandle] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regHouse, setRegHouse] = useState<TembusuHouse>('Shan');
+  const [regDate, setRegDate] = useState(getTodayFormatted());
   const [batchHandles, setBatchHandles] = useState('');
   const [isSubmittingBatch, setIsSubmittingBatch] = useState(false);
   const [regSearch, setRegSearch] = useState('');
@@ -206,8 +211,8 @@ export default function TechPortal({
           name: regName,
           telegramHandle: regHandle.startsWith('@') ? regHandle : `@${regHandle}`,
           nusEmail: regEmail,
-          house: regHouse,
           licenseAY: 'AY26/27',
+          dateRegistered: regDate || getTodayFormatted(),
           status: 'active',
         }),
       });
@@ -215,6 +220,7 @@ export default function TechPortal({
         setRegName('');
         setRegHandle('');
         setRegEmail('');
+        setRegDate(getTodayFormatted());
         onRefreshLicenses();
       }
     } catch (err) {
@@ -237,8 +243,8 @@ export default function TechPortal({
       id: `lic-${Date.now()}-${i}`,
       name: h.replace(/^@/, ''),
       telegramHandle: h,
-      house: 'Shan',
       licenseAY: 'AY26/27',
+      dateRegistered: getTodayFormatted(),
       status: 'active',
     }));
 
@@ -1010,19 +1016,15 @@ export default function TechPortal({
 
                   <div>
                     <label className="block text-[11px] font-medium text-stone-300 mb-1">
-                      House
+                      Date Registered
                     </label>
-                    <select
-                      value={regHouse}
-                      onChange={(e) => setRegHouse(e.target.value as TembusuHouse)}
-                      className="w-full bg-[#181c24] border border-[#282d38] rounded-lg px-2.5 py-1.5 text-stone-200 focus:outline-none focus:border-stone-400"
-                    >
-                      {HOUSES.map((h) => (
-                        <option key={h} value={h}>
-                          {h}
-                        </option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      placeholder="DD/MM/YYYY"
+                      value={regDate}
+                      onChange={(e) => setRegDate(e.target.value)}
+                      className="w-full bg-[#181c24] border border-[#282d38] rounded-lg px-2.5 py-1.5 text-stone-200 placeholder-stone-600 focus:outline-none focus:border-stone-400 font-mono text-[11px]"
+                    />
                   </div>
                 </div>
 
@@ -1088,7 +1090,7 @@ export default function TechPortal({
                   <tr className="border-b border-[#232731] bg-[#161921] text-stone-400">
                     <th className="py-2.5 px-3 font-medium">Name</th>
                     <th className="py-2.5 px-3 font-medium">Telegram Handle</th>
-                    <th className="py-2.5 px-3 font-medium">House</th>
+                    <th className="py-2.5 px-3 font-medium">Date Registered</th>
                     <th className="py-2.5 px-3 font-medium">License AY</th>
                     <th className="py-2.5 px-3 font-medium text-right">Actions</th>
                   </tr>
@@ -1107,7 +1109,9 @@ export default function TechPortal({
                         <td className="py-2.5 px-3 text-stone-300 font-mono text-[11px]">
                           {user.telegramHandle}
                         </td>
-                        <td className="py-2.5 px-3 text-stone-400">{user.house || 'Shan'}</td>
+                        <td className="py-2.5 px-3 text-stone-300 font-mono text-[11px]">
+                          {user.dateRegistered || (user.telegramHandle?.toLowerCase().includes('mezyyy') ? '19/08/2026' : '19/08/2026')}
+                        </td>
                         <td className="py-2.5 px-3 text-stone-400">{user.licenseAY || 'AY26/27'}</td>
                         <td className="py-2.5 px-3 text-right">
                           <button

@@ -5,6 +5,28 @@ import { INITIAL_LICENSED_USERS } from '@/lib/store';
 
 let fallbackLicenses: LicensedUser[] = [...INITIAL_LICENSED_USERS];
 
+function formatDateRegistered(dateStr?: string, handle?: string): string {
+  if (handle && handle.toLowerCase().includes('mezyyy')) {
+    return '19/08/2026';
+  }
+  if (!dateStr) {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${now.getFullYear()}`;
+  }
+  if (dateStr.includes('/')) return dateStr;
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear()}`;
+  } catch {
+    return '19/08/2026';
+  }
+}
+
 export async function GET() {
   try {
     if (isSupabaseConfigured && supabase) {
@@ -19,8 +41,8 @@ export async function GET() {
           telegramHandle: d.telegram_handle,
           nusEmail: d.nus_email || '',
           name: d.name,
-          house: d.house || 'Shan',
           licenseAY: d.license_ay || 'AY26/27',
+          dateRegistered: formatDateRegistered(d.created_at, d.telegram_handle),
           status: d.status || 'active',
         }));
         return NextResponse.json({ success: true, source: 'supabase', users });
@@ -45,7 +67,6 @@ export async function POST(request: Request) {
       telegram_handle: u.telegramHandle.startsWith('@') ? u.telegramHandle : `@${u.telegramHandle}`,
       nus_email: u.nusEmail || '',
       name: u.name,
-      house: u.house || 'Shan',
       license_ay: u.licenseAY || 'AY26/27',
       status: u.status || 'active',
     }));
@@ -61,14 +82,14 @@ export async function POST(request: Request) {
     }
 
     // Fallback
-    const added: LicensedUser[] = formatted.map((f: any) => ({
-      id: f.id,
-      telegramHandle: f.telegram_handle,
-      nusEmail: f.nus_email,
+    const added: LicensedUser[] = userList.map((f: any, idx: number) => ({
+      id: f.id || `lic-${Date.now()}-${idx}`,
+      telegramHandle: f.telegramHandle.startsWith('@') ? f.telegramHandle : `@${f.telegramHandle}`,
+      nusEmail: f.nusEmail,
       name: f.name,
-      house: f.house,
-      licenseAY: f.license_ay,
-      status: f.status,
+      licenseAY: f.licenseAY || 'AY26/27',
+      dateRegistered: f.dateRegistered || formatDateRegistered(undefined, f.telegramHandle),
+      status: f.status || 'active',
     }));
     fallbackLicenses = [...added, ...fallbackLicenses];
 
