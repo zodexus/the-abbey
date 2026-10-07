@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { EquipmentLoan } from '@/lib/types';
 import { INITIAL_EQUIPMENT_LOANS } from '@/lib/store';
-import { sendTelegramMessage, formatQMDMMessage, formatQMLoanMessage, TELEGRAM_QM_CHAT_ID } from '@/lib/telegram';
+import { sendTelegramMessage, formatQMDMMessage, formatQMLoanMessage, resolveUserChatId, TELEGRAM_QM_CHAT_ID } from '@/lib/telegram';
 
 // In-memory fallback if Supabase is not yet connected
 let fallbackLoans: EquipmentLoan[] = [...INITIAL_EQUIPMENT_LOANS];
@@ -127,6 +127,15 @@ export async function POST(request: Request) {
         ],
       };
       await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg, replyMarkup);
+    }
+
+    // Direct Telegram receipt to resident if chat ID is known and not QM
+    const residentChatId = resolveUserChatId(newLoanObj.telegramHandle);
+    if (residentChatId && residentChatId !== TELEGRAM_QM_CHAT_ID) {
+      await sendTelegramMessage(
+        residentChatId,
+        `📦 *Abbey Equipment Loan Request Received!*\n\nHi ${newLoanObj.requesterName}, your loan request for *${newLoanObj.basePackage}* (${newLoanObj.startDate} to ${newLoanObj.endDate}) has been submitted to Quartermaster (@mezyyy) for approval. You'll receive a confirmation message once reviewed!`
+      );
     }
 
     return NextResponse.json({ success: true, loan: newLoanObj });

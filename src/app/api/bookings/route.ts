@@ -5,6 +5,7 @@ import {
   formatDoorOpeningMessage,
   formatQMDMMessage,
   sendTelegramMessage,
+  resolveUserChatId,
   TELEGRAM_QM_CHAT_ID,
   TELEGRAM_ABBEY_LICENSED_CHAT_ID,
 } from '@/lib/telegram';
@@ -128,6 +129,15 @@ export async function POST(request: Request) {
         ],
       };
       await sendTelegramMessage(TELEGRAM_QM_CHAT_ID, qmMsg, replyMarkup);
+    }
+
+    // 2. If the resident has a known Telegram chat ID and is not the QM, send confirmation receipt
+    const residentChatId = resolveUserChatId(newBooking.telegramHandle);
+    if (residentChatId && residentChatId !== TELEGRAM_QM_CHAT_ID) {
+      await sendTelegramMessage(
+        residentChatId,
+        `🎸 *Abbey Booking Request Received!*\n\nHi ${newBooking.residentName}, your booking request for *${newBooking.date} (${newBooking.startTime} – ${newBooking.endTime})* has been submitted to Quartermaster (@mezyyy) for approval. You'll receive a confirmation message once reviewed!`
+      );
     }
 
     return NextResponse.json({ success: true, booking: newBooking });

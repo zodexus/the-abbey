@@ -33,12 +33,6 @@ export default function Navbar({
             <div className="flex items-center space-x-2">
               <span className="font-semibold text-base text-stone-100 tracking-tight">The Abbey</span>
               <span className="text-[11px] text-stone-400">Tembusu College</span>
-              {isSupabaseConnected && (
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] text-emerald-400 bg-emerald-950/40 border border-emerald-800/40 px-2 py-0.5 rounded-full font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live Synced
-                </span>
-              )}
             </div>
           </div>
         </div>
