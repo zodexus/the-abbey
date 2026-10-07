@@ -37,13 +37,31 @@ export default function Home() {
   const [isConcertMode, setIsConcertMode] = useState(false);
   const [unreadTelegramCount, setUnreadTelegramCount] = useState(1);
 
-  // Sync loans from server / Supabase
+  // Sync initial data from Supabase / API
   useEffect(() => {
     fetch('/api/loans')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.loans) && data.loans.length > 0) {
           setLoans(data.loans);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/bookings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.bookings) && data.bookings.length > 0) {
+          setBookings(data.bookings);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/licenses')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.users) && data.users.length > 0) {
+          setLicensedUsers(data.users);
         }
       })
       .catch(() => {});
@@ -60,6 +78,23 @@ export default function Home() {
     };
 
     setBookings((prev) => [newBooking, ...prev]);
+
+    // Persist booking to server / Supabase
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bookingData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.booking) {
+          setBookings((prev) => [
+            data.booking,
+            ...prev.filter((b) => b.id !== newId && b.id !== data.booking.id),
+          ]);
+        }
+      })
+      .catch((err) => console.error('Failed to persist booking:', err));
 
     const gearList =
       bookingData.equipmentNeeds.length > 0
@@ -155,6 +190,12 @@ export default function Home() {
       id: `lic-${Date.now()}`,
     };
     setLicensedUsers((prev) => [newUser, ...prev]);
+
+    fetch('/api/licenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUser),
+    }).catch(() => {});
   };
 
   const handleBatchAddLicenses = (newUsers: Array<Omit<LicensedUser, 'id'>>) => {
@@ -163,10 +204,20 @@ export default function Home() {
       id: `lic-${Date.now()}-${i}`,
     }));
     setLicensedUsers((prev) => [...entries, ...prev]);
+
+    fetch('/api/licenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ users: entries }),
+    }).catch(() => {});
   };
 
   const handleDeleteLicense = (id: string) => {
     setLicensedUsers((prev) => prev.filter((u) => u.id !== id));
+
+    fetch(`/api/licenses?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
   };
 
   const handleRequestLoan = (loanData: Omit<EquipmentLoan, 'id' | 'createdAt' | 'status'>) => {
