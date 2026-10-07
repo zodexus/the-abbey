@@ -324,8 +324,8 @@
     "isAvailable": true
   },
   {
-    "id": "-",
-    "barcode": "-",
+    "id": "ITEM-037",
+    "barcode": "",
     "name": "Harmon Kardon Speaker (Given By Jun)",
     "category": "Speakers",
     "subtype": "Recreational",
@@ -360,8 +360,8 @@
     "isAvailable": true
   },
   {
-    "id": "-",
-    "barcode": "-",
+    "id": "ITEM-041",
+    "barcode": "",
     "name": "Sennheiser Eoava",
     "category": "Microphones",
     "subtype": "",
@@ -405,8 +405,8 @@
     "isAvailable": true
   },
   {
-    "id": "-",
-    "barcode": "-",
+    "id": "ITEM-046",
+    "barcode": "",
     "name": "Akg Sr 40 Receiver For Wireless Mic",
     "category": "Microphones",
     "subtype": "Accessories",
@@ -1179,8 +1179,8 @@
     "isAvailable": true
   },
   {
-    "id": "-",
-    "barcode": "-",
+    "id": "ITEM-132",
+    "barcode": "",
     "name": "Kazoo",
     "category": "Instrument",
     "subtype": "Percussion",
@@ -1206,7 +1206,7 @@
     "isAvailable": true
   },
   {
-    "id": "AG001",
+    "id": "AMP-AG001",
     "barcode": "AG001",
     "name": "Laney LX12",
     "category": "Amplifiers",
@@ -1215,7 +1215,7 @@
     "isAvailable": true
   },
   {
-    "id": "AG002",
+    "id": "AMP-AG002",
     "barcode": "AG002",
     "name": "Vox VT 40+",
     "category": "Amplifiers",
@@ -1224,7 +1224,7 @@
     "isAvailable": true
   },
   {
-    "id": "AG003",
+    "id": "AMP-AG003",
     "barcode": "AG003",
     "name": "Vox AC10C1",
     "category": "Amplifiers",
@@ -1233,7 +1233,7 @@
     "isAvailable": true
   },
   {
-    "id": "AG004",
+    "id": "AMP-AG004",
     "barcode": "AG004",
     "name": "Boss Katana 100",
     "category": "Amplifiers",
@@ -1251,8 +1251,8 @@
     "isAvailable": true
   },
   {
-    "id": "-",
-    "barcode": "-",
+    "id": "ITEM-140",
+    "barcode": "",
     "name": "Marshall Mg50Fx Footswitch",
     "category": "Other",
     "subtype": "",
