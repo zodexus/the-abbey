@@ -1,14 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Music2, Calendar, Wrench, Lock, Send, Plus } from 'lucide-react';
+import { Music2, Calendar, Wrench, Lock, Plus } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'schedule' | 'loans' | 'tech_portal';
   setActiveTab: (tab: 'schedule' | 'loans' | 'tech_portal') => void;
   onOpenBookingModal: () => void;
-  onToggleTelegramDrawer: () => void;
-  unreadTelegramCount?: number;
   isSupabaseConnected?: boolean;
   isTechAuthenticated?: boolean;
 }
@@ -17,8 +15,6 @@ export default function Navbar({
   activeTab,
   setActiveTab,
   onOpenBookingModal,
-  onToggleTelegramDrawer,
-  unreadTelegramCount = 0,
   isSupabaseConnected = false,
   isTechAuthenticated = false,
 }: NavbarProps) {
@@ -26,7 +22,10 @@ export default function Navbar({
     <header className="sticky top-0 z-40 bg-[#121418]/95 backdrop-blur-md border-b border-[#232730] px-4 lg:px-8 py-2.5 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Logo and Brand */}
-        <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setActiveTab('schedule')}>
+        <div
+          className="flex items-center space-x-2.5 cursor-pointer"
+          onClick={() => setActiveTab('schedule')}
+        >
           <div className="w-8 h-8 rounded-lg bg-stone-800 border border-stone-700/60 flex items-center justify-center text-stone-200">
             <Music2 className="w-4 h-4 text-amber-200/90" />
           </div>
@@ -73,21 +72,6 @@ export default function Navbar({
 
         {/* Right Actions: Tech Login & Request Booking */}
         <div className="flex items-center space-x-2">
-          {/* Telegram Feed Button */}
-          <button
-            onClick={onToggleTelegramDrawer}
-            className="p-1.5 md:px-2.5 md:py-1.5 rounded-lg bg-[#1c2026] hover:bg-[#232830] text-stone-300 text-xs border border-[#2b303b] transition-colors relative flex items-center gap-1.5"
-            title="Live Telegram Bot Activity"
-          >
-            <Send className="w-3.5 h-3.5 text-stone-300" />
-            <span className="hidden md:inline">Bot Feed</span>
-            {unreadTelegramCount > 0 && (
-              <span className="w-3.5 h-3.5 bg-amber-400 text-stone-950 font-bold rounded-full text-[9px] flex items-center justify-center">
-                {unreadTelegramCount}
-              </span>
-            )}
-          </button>
-
           {/* Tech Member Portal Button */}
           <button
             onClick={() => setActiveTab('tech_portal')}
@@ -109,7 +93,7 @@ export default function Navbar({
           {/* Request Slot Button */}
           <button
             onClick={onOpenBookingModal}
-            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-white text-stone-950 text-xs font-semibold shadow-sm transition-colors"
+            className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-stone-200 hover:bg-white text-stone-950 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Request Slot</span>

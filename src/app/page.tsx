@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import CalendarView from '@/components/CalendarView';
 import BookingModal from '@/components/BookingModal';
-import TelegramDutyDrawer from '@/components/TelegramDutyDrawer';
 import EquipmentLoanSection from '@/components/EquipmentLoanSection';
 import TechPortal from '@/components/TechPortal';
 import {
@@ -12,16 +11,14 @@ import {
   LicensedUser,
   RecurringSlot,
   EquipmentLoan,
-  TelegramSimulatedMessage,
 } from '@/lib/types';
 import {
   INITIAL_BOOKINGS,
   INITIAL_LICENSED_USERS,
   INITIAL_RECURRING_SLOTS,
   INITIAL_EQUIPMENT_LOANS,
-  INITIAL_TELEGRAM_MESSAGES,
 } from '@/lib/store';
-import { Lock, KeyRound, AlertCircle, Sparkles, Send } from 'lucide-react';
+import { Lock, KeyRound, AlertCircle } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'schedule' | 'loans' | 'tech_portal'>('schedule');
@@ -29,12 +26,9 @@ export default function Home() {
   const [licensedUsers, setLicensedUsers] = useState<LicensedUser[]>(INITIAL_LICENSED_USERS);
   const [recurringSlots, setRecurringSlots] = useState<RecurringSlot[]>(INITIAL_RECURRING_SLOTS);
   const [loans, setLoans] = useState<EquipmentLoan[]>(INITIAL_EQUIPMENT_LOANS);
-  const [telegramMessages, setTelegramMessages] = useState<TelegramSimulatedMessage[]>(INITIAL_TELEGRAM_MESSAGES);
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [isTelegramDrawerOpen, setIsTelegramDrawerOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; startTime: string } | null>(null);
-  const [unreadTelegramCount, setUnreadTelegramCount] = useState(0);
   const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
 
   // Tech Member Auth state
@@ -147,71 +141,7 @@ export default function Home() {
       })
       .catch((err) => console.error('Failed to persist booking:', err));
 
-    // Simulated Telegram message to QM
-    const qmMsg: TelegramSimulatedMessage = {
-      id: `tg-qm-${Date.now()}`,
-      bookingId: newId,
-      chatType: 'direct_message_qm',
-      recipientHandle: '@mezyyy',
-      title: '🎸 Booking Request Sent to QM (@mezyyy)',
-      body:
-        `🎸 *New Abbey Booking Request*\n\n` +
-        `📅 Date: ${bookingData.date}\n` +
-        `⏰ Time: ${bookingData.startTime} – ${bookingData.endTime}\n` +
-        `👤 Booker: ${bookingData.residentName} (${bookingData.telegramHandle})\n` +
-        `🎯 Purpose: ${bookingData.purpose}\n` +
-        `🔑 Needs Unlock: ${bookingData.needsDoorUnlock ? 'Yes (will notify group chat)' : 'No (has door access)'}\n\n` +
-        `Status: Pending QM Approval`,
-      timestamp: 'Just now',
-    };
-
-    setTelegramMessages((prev) => [qmMsg, ...prev]);
-    setUnreadTelegramCount((c) => c + 1);
     setIsBookingModalOpen(false);
-    setIsTelegramDrawerOpen(true);
-  };
-
-  // Door claim handler
-  const handleClaimDoor = (bookingId: string, claimerHandle: string) => {
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingId
-          ? {
-              ...b,
-              doorOpenerHandle: claimerHandle,
-              doorClaimedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            }
-          : b
-      )
-    );
-
-    setTelegramMessages((prev) =>
-      prev.map((m) =>
-        m.bookingId === bookingId
-          ? {
-              ...m,
-              claimedBy: claimerHandle,
-              body: `${m.body}\n\n✅ *DOOR CLAIMED BY:* ${claimerHandle}`,
-            }
-          : m
-      )
-    );
-  };
-
-  // Checkout photo handler
-  const handleCheckoutPhoto = (bookingId: string, photoUrl: string) => {
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingId
-          ? {
-              ...b,
-              status: 'checked_out',
-              checkoutPhotoUrl: photoUrl,
-              checkoutTimestamp: new Date().toISOString(),
-            }
-          : b
-      )
-    );
   };
 
   const handleSelectSlot = (date: string, startTime: string) => {
@@ -227,27 +157,6 @@ export default function Home() {
       createdAt: new Date().toISOString().split('T')[0],
     };
     setLoans((prev) => [newLoan, ...prev]);
-
-    // Send direct Telegram notification to Quartermaster (@mezyyy)
-    const newMsg: TelegramSimulatedMessage = {
-      id: `msg-${Date.now()}`,
-      chatType: 'direct_message_qm',
-      recipientHandle: '@mezyyy',
-      title: '📦 Loan Request Sent to QM (@mezyyy)',
-      body:
-        `📦 *New Equipment Loan Request*\n\n` +
-        `👤 Requester: ${newLoan.requesterName} (${newLoan.telegramHandle})\n` +
-        `🏛️ Committee: ${newLoan.committee || 'Resident'}\n` +
-        `🎯 Purpose: ${newLoan.purpose}\n` +
-        `📅 Dates: ${newLoan.startDate} to ${newLoan.endDate}\n` +
-        `📦 Package: ${newLoan.basePackage}\n` +
-        `🔧 Gear: ${newLoan.equipmentList.join('; ')}\n\n` +
-        `Status: Pending QM Approval`,
-      timestamp: 'Just now',
-    };
-
-    setTelegramMessages((prev) => [newMsg, ...prev]);
-    setUnreadTelegramCount((c) => c + 1);
 
     fetch('/api/loans', {
       method: 'POST',
@@ -287,7 +196,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#101216] text-stone-200 flex flex-col font-sans">
-      {/* Navbar with 2 public pages + Tech Portal button */}
+      {/* Clean Navbar: Schedule, Equipment Loaning, Tech Login, Request Slot */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -297,11 +206,6 @@ export default function Home() {
           setSelectedSlot(null);
           setIsBookingModalOpen(true);
         }}
-        onToggleTelegramDrawer={() => {
-          setIsTelegramDrawerOpen(!isTelegramDrawerOpen);
-          setUnreadTelegramCount(0);
-        }}
-        unreadTelegramCount={unreadTelegramCount}
       />
 
       {/* Main Container */}
@@ -324,7 +228,7 @@ export default function Home() {
           />
         )}
 
-        {/* Hidden Page: Tech Member Portal */}
+        {/* Protected Page: Tech Member Portal */}
         {activeTab === 'tech_portal' && (
           <div>
             {!isTechAuthenticated ? (
@@ -366,7 +270,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    className="w-full py-2 rounded-xl bg-stone-200 hover:bg-white text-stone-900 font-semibold text-xs transition-colors shadow-sm"
+                    className="w-full py-2 rounded-xl bg-stone-200 hover:bg-white text-stone-900 font-semibold text-xs transition-colors shadow-sm cursor-pointer"
                   >
                     Enter Tech Portal
                   </button>
@@ -397,16 +301,6 @@ export default function Home() {
         licensedUsers={licensedUsers}
         onConfirmBooking={handleConfirmBooking}
         isConcertMode={false}
-      />
-
-      {/* Telegram Live Duty & Check-out Simulation Drawer */}
-      <TelegramDutyDrawer
-        isOpen={isTelegramDrawerOpen}
-        onClose={() => setIsTelegramDrawerOpen(false)}
-        bookings={bookings}
-        messages={telegramMessages}
-        onClaimDoor={handleClaimDoor}
-        onCheckoutPhoto={handleCheckoutPhoto}
       />
     </div>
   );
