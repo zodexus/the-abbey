@@ -1,7 +1,6 @@
 import { Booking, EquipmentLoan, TelegramSimulatedMessage } from './types';
 
-export const TELEGRAM_BOT_TOKEN =
-  process.env.TELEGRAM_BOT_TOKEN || '8257821031:AAF-n_rHxixoSbUzgX-BIWK54r66e5S0MnU';
+export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 export const TELEGRAM_QM_CHAT_ID = process.env.TELEGRAM_QM_CHAT_ID || '1140443964';
 export const TELEGRAM_ABBEY_LICENSED_CHAT_ID =
   process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID || process.env.TELEGRAM_ARTS_CC_CHAT_ID || '-1003933261200';
