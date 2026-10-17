@@ -12,7 +12,7 @@ export const send = (chat: string | number, text: string, reply_markup?: unknown
 export function calendarButton() {
   const url = process.env.NEXT_PUBLIC_APP_URL;
   if (!url?.startsWith('https://')) return undefined;
-  return { inline_keyboard: [[{ text: 'Open Abbey calendar', web_app: { url } }]] };
+  return { inline_keyboard: [[{ text: 'Calendar', web_app: { url } }]] };
 }
 export function bookingSummary(b: { resident_name: string; purpose: string; starts_at: string; ends_at: string }) {
   const format = (date: string) => new Date(date).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });

@@ -14,14 +14,14 @@ export async function GET(request: Request) {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new AppError('Choose a valid date.');
       const start = new Date(`${date}T00:00:00+08:00`);
       if (!Number.isFinite(start.getTime())) throw new AppError('Choose a valid date.');
-      query = query.lt('starts_at', new Date(start.getTime() + 7 * 86400000).toISOString()).gt('ends_at', start.toISOString()).in('status', ['confirmed','pending']).limit(1000);
+      query = query.lt('starts_at', new Date(start.getTime() + 42 * 86400000).toISOString()).gt('ends_at', start.toISOString()).in('status', ['confirmed','pending']).limit(1000);
     }
     const { data, error } = await query;
     if (error) dbError(error);
     return Response.json({ bookings: (data || []).map(b => ({
       id: b.id, starts_at: b.starts_at, ends_at: b.ends_at, status: b.status,
       mine: b.telegram_user_id === user.id,
-      resident_name: admin || b.telegram_user_id === user.id ? b.resident_name : '',
+      resident_name: b.resident_name,
       purpose: admin || b.telegram_user_id === user.id ? b.purpose : '',
     })) }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) { return failure(e); }
@@ -40,9 +40,15 @@ export async function POST(request: Request) {
 }
 export async function PATCH(request: Request) {
   try {
-    const { user } = await authenticate(request);
+    const { user, admin } = await authenticate(request);
     const { id } = await request.json();
     if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) throw new AppError('Invalid booking.');
+    // Imported reservations have no Telegram account to notify or claim ownership.
+    if (admin) {
+      const { data, error } = await db().from('abbey_bookings').update({ status: 'cancelled' }).eq('id', id).eq('telegram_user_id', 0).eq('status', 'confirmed').gt('starts_at', new Date().toISOString()).select('id');
+      if (error) dbError(error);
+      if (data?.length) return Response.json({ ok: true });
+    }
     const { error } = await db().rpc('abbey_decide', { p_id: id, p_status: 'cancelled', p_actor: user.id, p_qm: process.env.TELEGRAM_QM_CHAT_ID });
     if (error) throw new AppError('Unable to cancel. It may already be handled or have started.', 409);
     await flushNotifications();

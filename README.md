@@ -1,6 +1,6 @@
 # The Abbey
 
-A Telegram Mini App for Tembusu College’s bandroom. Residents browse a seven-day date strip and daily availability, request a session, and manage their bookings. The quartermaster approves or rejects in **@TheAbbeyBot**, and manages the licensed-user registry in the app or with Telegram commands.
+A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and cancel their own bookings. The quartermaster approves or rejects in **@TheAbbeyBot**. Licensed handles are managed directly in Supabase.
 
 ## Local preview
 
@@ -11,7 +11,7 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3000 and choose **Try the calendar preview**. Sample bookings and registry edits live only in browser memory. Preview never calls booking APIs or sends messages. Live mode requires signed Telegram Mini App data; there is no authentication bypass.
+Open http://localhost:3000 and choose **Preview**. Sample bookings and requests live only in browser memory. Preview never calls booking APIs or sends messages. Live mode requires signed Telegram Mini App data; there is no authentication bypass.
 
 ## Existing Supabase setup
 
@@ -21,7 +21,7 @@ Open http://localhost:3000 and choose **Try the calendar preview**. Sample booki
 4. `TELEGRAM_QM_CHAT_ID` must be the quartermaster's numeric **user ID**, not a group ID. This account has admin access without a registry entry.
 5. Set a random `TELEGRAM_WEBHOOK_SECRET` (16–256 URL-safe characters). Keep `NEXT_PUBLIC_APP_URL=https://the-abbey.vercel.app` for the current deployment.
 
-The existing Notion schedule and legacy Supabase bookings are **not imported automatically**. Reconcile upcoming reservations before launch and enter them in the new system. The preview is not a live schedule. Do not announce an empty new calendar as available until existing reservations are entered.
+Notion import: `scripts/import-notion.mjs` reconciles the saved October calendar in `artifacts/notion-october-source.json`. The local source and import report are ignored by Git. The import uses source page IDs for idempotency and `telegram_user_id = 0` for bookings without a Telegram owner; only the QM can cancel those in the app. It never sends notifications or changes the source Notion page.
 
 ## Deployment
 
@@ -37,14 +37,20 @@ pnpm bot:configure
 
 The Supabase server key cannot run SQL migrations itself: apply SQL through the dashboard or a database connection. `/api/health` returns readiness only, never records or secrets.
 
-## Licensing
+## Licensing: edit in Supabase
 
-- **Licensed users**: add a handle and name; revoke/restore access.
-- Bot: `/license @handle Name` adds a resident; `/revoke @handle` disables access.
-- The handle binds to the verified Telegram user ID on first use. Access then survives username changes. A different person claiming the old username cannot use a bound license.
-- Before first use, verify the handle with the resident: an unbound username is not permanent proof of identity. The registry shows the originally registered handle, which may differ from the user's current username after binding.
-- Revocation blocks new use immediately, including existing app sessions, but does not cancel confirmed bookings. Account replacements require deliberate registry correction in Supabase.
-- Only the QM can read the registry and other residents' booking names/purposes. Other licensed residents see occupied times, pending counts and their own details.
+Open https://supabase.com/dashboard/project/mmkwxgmunvcvpslvxugb/editor and select **public.abbey_licenses** (not the old licensed_users table).
+
+1. Click **Insert → Insert row**.
+2. Enter **handle** in lowercase without @, e.g. tembusian_name, and **name**.
+3. Keep **active = true**. Leave **id** and **created_at** at their defaults, and **telegram_user_id** empty (NULL). Save.
+4. The resident opens @TheAbbeyBot, sends /start, and taps **Calendar**. Their Telegram account ID binds automatically on first use.
+
+To revoke access, edit the row and set **active = false**. To restore it, set **active = true**. Changes apply on the next API request, including existing sessions. No deployment is needed. Revoking a license does not cancel existing bookings.
+
+Use the table's filter on **handle** or **name** to find a person. Do not clear or change a bound **telegram_user_id** just because their username changed: the stable ID keeps their access attached to the right account. Before first use, verify the handle with the resident. The QM account has admin access through TELEGRAM_QM_CHAT_ID.
+
+Licensed residents can see booking names and times, as in the former Notion calendar. Purposes remain visible only to the owner and QM. The registry has no public or in-app endpoint.
 
 ## Booking behavior
 

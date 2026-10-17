@@ -1,5 +1,5 @@
 import { db, isAdmin, licensed } from '@/lib/server';
-import { AppError, normalizeHandle, validWebhookSecret, type TelegramUser } from '@/lib/security';
+import { AppError, validWebhookSecret, type TelegramUser } from '@/lib/security';
 import { bookingSummary, calendarButton, flushNotifications, send, telegram } from '@/lib/telegram';
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
@@ -23,16 +23,9 @@ export async function POST(request: Request) {
         await telegram('answerCallbackQuery', { callback_query_id: callback.id, text: `Booking ${data.status}.` });
         await telegram('editMessageText', { chat_id: user.id, message_id: callback.message.message_id, text: `Abbey booking ${data.status}\n\n${bookingSummary(data)}`, reply_markup: { inline_keyboard: [] } });
       } else {
-        const [rawCommand, handle, ...name] = String(message.text || '').trim().split(/\s+/);
+        const [rawCommand] = String(message.text || '').trim().split(/\s+/);
         const command = rawCommand?.split('@')[0];
-        if (isAdmin(user) && ['/license', '/revoke'].includes(command)) {
-          const normalized = normalizeHandle(handle);
-          const result = command === '/license'
-            ? await db().from('abbey_licenses').upsert({ handle: normalized, name: name.join(' ').slice(0,80) }, { onConflict: 'handle', ignoreDuplicates: true })
-            : await db().from('abbey_licenses').update({ active: false }).eq('handle', normalized);
-          if (result.error) throw new AppError('Could not update the registry. Try again.');
-          await send(user.id, command === '/license' ? `@${normalized} is in the registry. Existing revoked entries stay revoked; reactivate them in Licensed users.` : `Access revoked for @${normalized}.`);
-        } else if (isAdmin(user) && command === '/pending') {
+        if (isAdmin(user) && command === '/pending') {
           const { data, error } = await db().from('abbey_bookings').select('*').eq('status', 'pending').gt('starts_at', new Date().toISOString()).order('starts_at').limit(10);
           if (error) throw new AppError('Could not load requests.');
           if (!data.length) await send(user.id, 'No upcoming requests waiting for approval.');
@@ -41,7 +34,7 @@ export async function POST(request: Request) {
           const ok = await flushNotifications();
           await send(user.id, ok ? 'Notification retry batch completed.' : 'Some notifications could not be sent. Try /sync again later.');
         } else {
-          await send(user.id, `Welcome to The Abbey 🎸\n\nOpen the calendar to check availability, request a slot, or cancel a booking. All times are Singapore time. Requests need quartermaster approval.${isAdmin(user) ? '\n\nQuartermaster commands:\n/license @handle Name — add a licensed resident\n/revoke @handle — revoke access\n/pending — show next 10 requests\n/sync — retry queued notifications\n\nManage the full registry in the calendar’s Licensed users tab.' : ''}`, calendarButton());
+          await send(user.id, `The Abbey 🎶\n\nCheck availability and request a booking below.${isAdmin(user) ? '\n\n/pending — review requests\n/sync — retry notifications' : ''}`, calendarButton());
         }
       }
     } catch (error) {
