@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  distDir: '.next-abbey',
+  // Keep iCloud's old local cache separate; Vercel expects the standard output.
+  distDir: process.env.VERCEL ? '.next' : '.next-abbey',
 };
 
 export default nextConfig;
