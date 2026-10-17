@@ -1,292 +1,55 @@
-import { NextResponse } from 'next/server';
-import { sendTelegramMessage, TELEGRAM_BOT_TOKEN, TELEGRAM_QM_CHAT_ID, TELEGRAM_ABBEY_LICENSED_CHAT_ID } from '@/lib/telegram';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-
+import { db, isAdmin, licensed } from '@/lib/server';
+import { AppError, normalizeHandle, validWebhookSecret, type TelegramUser } from '@/lib/security';
+import { bookingSummary, calendarButton, flushNotifications, send, telegram } from '@/lib/telegram';
+export const runtime = 'nodejs';
 export async function POST(request: Request) {
+  if (!validWebhookSecret(request.headers.get('x-telegram-bot-api-secret-token'), process.env.TELEGRAM_WEBHOOK_SECRET || '')) return Response.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const body = await request.json();
-
-    // 1. Handle Interactive Callback Queries (Approve / Reject / Claim Door)
-    if (body.callback_query) {
-      const { id, data, from, message } = body.callback_query;
-      const userHandle = from.username ? `@${from.username}` : from.first_name;
-
-      // --- A. Claim Door Duty by Abbey Licensed member ---
-      if (data && data.startsWith('claim_door:')) {
-        const bookingId = data.replace('claim_door:', '');
-
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              callback_query_id: id,
-              text: `✅ Thank you ${userHandle}! You have claimed door duty for this slot.`,
-            }),
-          });
-
-          // Update message in group chat
-          if (message?.chat?.id && message?.message_id) {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: message.chat.id,
-                message_id: message.message_id,
-                text: `${message.text}\n\n✅ *DOOR DUTY CLAIMED:* ${userHandle} will unlock the Abbey.`,
-                parse_mode: 'Markdown',
-              }),
-            });
-          }
+    const update = await request.json();
+    const callback = update.callback_query;
+    const message = update.message;
+    const user: TelegramUser | undefined = callback?.from || message?.from;
+    if (!user || user.id <= 0 || !Number.isSafeInteger(user.id)) return Response.json({ ok: true });
+    // Never publish the calendar or license registry to group chats.
+    if ((callback?.message?.chat?.type || message?.chat?.type) !== 'private') return Response.json({ ok: true });
+    try {
+      await licensed(user);
+      if (callback) {
+        if (!isAdmin(user)) throw new AppError('Only the quartermaster can approve bookings.', 403);
+        const match = /^(approve|reject):([0-9a-f-]{36})$/i.exec(callback.data || '');
+        if (!match) throw new AppError('This button belongs to an older version. Use /pending.');
+        const { data, error } = await db().rpc('abbey_decide', { p_id: match[2], p_status: match[1] === 'approve' ? 'confirmed' : 'rejected', p_actor: user.id, p_qm: process.env.TELEGRAM_QM_CHAT_ID });
+        if (error) throw new AppError(error.code === '23P01' ? 'This overlaps an approved booking. Reject it or choose another slot.' : 'Cannot update: already handled, started, or the license was revoked.');
+        await telegram('answerCallbackQuery', { callback_query_id: callback.id, text: `Booking ${data.status}.` });
+        await telegram('editMessageText', { chat_id: user.id, message_id: callback.message.message_id, text: `Abbey booking ${data.status}\n\n${bookingSummary(data)}`, reply_markup: { inline_keyboard: [] } });
+      } else {
+        const [rawCommand, handle, ...name] = String(message.text || '').trim().split(/\s+/);
+        const command = rawCommand?.split('@')[0];
+        if (isAdmin(user) && ['/license', '/revoke'].includes(command)) {
+          const normalized = normalizeHandle(handle);
+          const result = command === '/license'
+            ? await db().from('abbey_licenses').upsert({ handle: normalized, name: name.join(' ').slice(0,80) }, { onConflict: 'handle', ignoreDuplicates: true })
+            : await db().from('abbey_licenses').update({ active: false }).eq('handle', normalized);
+          if (result.error) throw new AppError('Could not update the registry. Try again.');
+          await send(user.id, command === '/license' ? `@${normalized} is in the registry. Existing revoked entries stay revoked; reactivate them in Licensed users.` : `Access revoked for @${normalized}.`);
+        } else if (isAdmin(user) && command === '/pending') {
+          const { data, error } = await db().from('abbey_bookings').select('*').eq('status', 'pending').gt('starts_at', new Date().toISOString()).order('starts_at').limit(10);
+          if (error) throw new AppError('Could not load requests.');
+          if (!data.length) await send(user.id, 'No upcoming requests waiting for approval.');
+          for (const b of data) await send(user.id, `Abbey booking request\n\n${bookingSummary(b)}`, { inline_keyboard: [[{ text: 'Approve', callback_data: `approve:${b.id}` }, { text: 'Reject', callback_data: `reject:${b.id}` }]] });
+        } else if (isAdmin(user) && command === '/sync') {
+          const ok = await flushNotifications();
+          await send(user.id, ok ? 'Notification retry batch completed.' : 'Some notifications could not be sent. Try /sync again later.');
+        } else {
+          await send(user.id, `Welcome to The Abbey 🎸\n\nOpen the calendar to check availability, request a slot, or cancel a booking. All times are Singapore time. Requests need quartermaster approval.${isAdmin(user) ? '\n\nQuartermaster commands:\n/license @handle Name — add a licensed resident\n/revoke @handle — revoke access\n/pending — show next 10 requests\n/sync — retry queued notifications\n\nManage the full registry in the calendar’s Licensed users tab.' : ''}`, calendarButton());
         }
-
-        // Update database
-        if (isSupabaseConfigured && supabase) {
-          await supabase
-            .from('bookings')
-            .update({
-              door_opener_handle: userHandle,
-              door_claimed_at: new Date().toISOString(),
-            })
-            .eq('id', bookingId);
-        }
-
-        return NextResponse.json({ ok: true, action: 'claimed_door', bookingId, userHandle });
       }
-
-      // --- B. QM Approves Bandroom Booking ---
-      if (data && data.startsWith('approve_booking:')) {
-        const bookingId = data.replace('approve_booking:', '');
-
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              callback_query_id: id,
-              text: `✅ Approved booking ${bookingId}! Added to calendar.`,
-            }),
-          });
-
-          if (message?.chat?.id && message?.message_id) {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: message.chat.id,
-                message_id: message.message_id,
-                text: `${message.text}\n\n✅ *STATUS:* APPROVED by Quartermaster (@mezyyy)`,
-                parse_mode: 'Markdown',
-              }),
-            });
-          }
-        }
-
-        // Update booking in Supabase
-        let bookingData: any = null;
-        if (isSupabaseConfigured && supabase) {
-          const { data: updated } = await supabase
-            .from('bookings')
-            .update({ status: 'confirmed' })
-            .eq('id', bookingId)
-            .select()
-            .single();
-          bookingData = updated;
-        }
-
-        // If door unlock is requested, dispatch to Abbey Licensed group
-        if (bookingData && bookingData.needs_door_unlock && TELEGRAM_ABBEY_LICENSED_CHAT_ID) {
-          const doorMsg =
-            `🎸 *Abbey Booking — Unlock Needed*\n\n` +
-            `📅 *Date:* ${bookingData.date}\n` +
-            `⏰ *Time:* ${bookingData.start_time} – ${bookingData.end_time}\n` +
-            `👤 *Booker:* ${bookingData.resident_name} (${bookingData.telegram_handle})\n` +
-            `🎯 *Purpose:* ${bookingData.purpose || 'Band Practice'}\n\n` +
-            `Can anyone in hall help unlock the Abbey? Tap below to claim:`;
-
-          const replyMarkup = {
-            inline_keyboard: [
-              [
-                {
-                  text: '🔑 I can unlock the Abbey',
-                  callback_data: `claim_door:${bookingId}`,
-                },
-              ],
-            ],
-          };
-
-          await sendTelegramMessage(TELEGRAM_ABBEY_LICENSED_CHAT_ID, doorMsg, replyMarkup);
-        }
-
-        return NextResponse.json({ ok: true, action: 'booking_approved', bookingId });
-      }
-
-      // --- C. QM Rejects Bandroom Booking ---
-      if (data && data.startsWith('reject_booking:')) {
-        const bookingId = data.replace('reject_booking:', '');
-
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              callback_query_id: id,
-              text: `❌ Rejected booking ${bookingId}.`,
-            }),
-          });
-
-          if (message?.chat?.id && message?.message_id) {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: message.chat.id,
-                message_id: message.message_id,
-                text: `${message.text}\n\n❌ *STATUS:* REJECTED by Quartermaster (@mezyyy)`,
-                parse_mode: 'Markdown',
-              }),
-            });
-          }
-        }
-
-        if (isSupabaseConfigured && supabase) {
-          await supabase
-            .from('bookings')
-            .update({ status: 'cancelled' })
-            .eq('id', bookingId);
-        }
-
-        return NextResponse.json({ ok: true, action: 'booking_rejected', bookingId });
-      }
-
-      // --- D. QM Approves Equipment Loan ---
-      if (data && data.startsWith('approve_loan:')) {
-        const loanId = data.replace('approve_loan:', '');
-
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              callback_query_id: id,
-              text: `✅ Approved equipment loan!`,
-            }),
-          });
-
-          if (message?.chat?.id && message?.message_id) {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: message.chat.id,
-                message_id: message.message_id,
-                text: `${message.text}\n\n✅ *STATUS:* APPROVED by Quartermaster (@mezyyy)`,
-                parse_mode: 'Markdown',
-              }),
-            });
-          }
-        }
-
-        if (isSupabaseConfigured && supabase) {
-          await supabase
-            .from('equipment_loans')
-            .update({ status: 'approved' })
-            .eq('id', loanId);
-        }
-
-        return NextResponse.json({ ok: true, action: 'loan_approved', loanId });
-      }
-
-      // --- E. QM Rejects Equipment Loan ---
-      if (data && data.startsWith('reject_loan:')) {
-        const loanId = data.replace('reject_loan:', '');
-
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              callback_query_id: id,
-              text: `❌ Rejected equipment loan.`,
-            }),
-          });
-
-          if (message?.chat?.id && message?.message_id) {
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: message.chat.id,
-                message_id: message.message_id,
-                text: `${message.text}\n\n❌ *STATUS:* REJECTED by Quartermaster (@mezyyy)`,
-                parse_mode: 'Markdown',
-              }),
-            });
-          }
-        }
-
-        if (isSupabaseConfigured && supabase) {
-          await supabase
-            .from('equipment_loans')
-            .update({ status: 'rejected' })
-            .eq('id', loanId);
-        }
-
-        return NextResponse.json({ ok: true, action: 'loan_rejected', loanId });
-      }
+    } catch (error) {
+      if (!(error instanceof AppError)) throw error;
+      if (callback) await telegram('answerCallbackQuery', { callback_query_id: callback.id, text: error.message.slice(0, 190), show_alert: true });
+      else await send(user.id, error.message);
     }
-
-    // 2. Handle Photo Check-Out Reply from Resident
-    if (body.message?.photo) {
-      const chatId = body.message.chat.id;
-      const photos = body.message.photo;
-      const highestResPhoto = photos[photos.length - 1]; // highest resolution photo file_id
-      const senderHandle = body.message.from?.username
-        ? `@${body.message.from.username}`
-        : body.message.from?.first_name || 'Resident';
-
-      // Send thank you confirmation to resident
-      await sendTelegramMessage(
-        String(chatId),
-        `📸 *Check-Out Received! Thank you!*\n\nYour Abbey room check-out photo has been received and added to the Tech check-out photo database.\n\nKeep jamming! 🎸`
-      );
-
-      // Forward / alert QM
-      if (TELEGRAM_QM_CHAT_ID && String(chatId) !== TELEGRAM_QM_CHAT_ID) {
-        if (TELEGRAM_BOT_TOKEN) {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: TELEGRAM_QM_CHAT_ID,
-              photo: highestResPhoto.file_id,
-              caption: `📸 *Abbey Room Check-Out Photo*\nFrom: ${senderHandle}\nTime: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-              parse_mode: 'Markdown',
-            }),
-          });
-        }
-      }
-
-      return NextResponse.json({
-        ok: true,
-        action: 'checkout_photo_received',
-        sender: senderHandle,
-        fileId: highestResPhoto.file_id,
-      });
-    }
-
-    // 3. Fallback for /start or generic messages
-    if (body.message?.text === '/start') {
-      const chatId = body.message.chat.id;
-      await sendTelegramMessage(
-        String(chatId),
-        `👋 *Welcome to Tembusu Abbey Bot!*\n\nI handle Abbey bandroom booking requests, door-opening alerts, and session room check-out photo verification.\n\nBook your slot or loan equipment online at the Abbey Portal!`
-      );
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    console.error('Telegram webhook error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+    await flushNotifications();
+    return Response.json({ ok: true });
+  } catch { return Response.json({ error: 'Retry later' }, { status: 500 }); }
 }

@@ -1,110 +1,69 @@
-# The Abbey — Tembusu College Bandroom Portal 🎸
+# The Abbey
 
-A modern, automated bandroom booking, door-opening duty coordination, and equipment loan management system built for the **Tembusu College Arts Committee**.
+A Telegram Mini App for Tembusu College’s bandroom. Residents browse a seven-day date strip and daily availability, request a session, and manage their bookings. The quartermaster approves or rejects in **@TheAbbeyBot**, and manages the licensed-user registry in the app or with Telegram commands.
 
-Designed specifically to eliminate Quartermaster (QM) burnout, replace manual Telegram/Notion scheduling, and coordinate door opening duties across the entire Arts CC and Residential Assistants (RAs).
+## Local preview
 
----
+Requires Node 22.18+ (Node 24 recommended) and pnpm 11.
 
-## 🌟 Key Features
-
-### 1. Interactive 7-Day Live Schedule Grid
-- Real-time slot availability from **09:00 to 24:00**.
-- **Recurring Slot Reservations**: Automatically locks out fixed interest group slots like **tKaraoke (Fridays 8 PM – 12 AM)** and **tGrapevine podcast sessions**.
-- Built-in **2-hour session quota** and 7-day advance booking window to prevent slot hoarding.
-- Mobile-friendly responsive view designed for residents booking from their phones.
-
-### 2. Automated Telegram Door-Opening Dispatch
-- When a resident confirms a booking on the portal, an automated message is dispatched to the **Arts CC Telegram Group**.
-- **Interactive Inline Button:** `[ 🔑 I can open the Abbey ]` allows any Arts CC member currently in hall to claim the opening duty with one tap.
-- Avoids duplicate trips: The Telegram message updates in real time to show `✅ Claimed by @sarah_arts`, and the resident is informed who is coming down.
-- **You (the QM) no longer have to manually coordinate every door opening!**
-
-### 3. End-of-Session Photo Check-Out & Upkeep Tracking
-- 15 minutes before a session ends, the Telegram bot automatically sends the resident a clean-up checklist (coiling cables, powering off amps, mic storage).
-- The resident replies directly with a **photo of the bandroom**.
-- The photo is logged with a timestamp in the Quartermaster audit gallery, solving the problem of untracked gear mishandling.
-
-### 4. AY26/27 Licensing Whitelist
-- Enforces college bandroom licensing policy.
-- Real-time check against the AY26/27 licensing database.
-- Residents who missed the Sem 1 licensing briefing are prompted with clear guidance to liaise with QM & Tech members.
-
-### 5. Equipment Loan Request Portal
-- Dedicated module for microphone, cable, and portable PA loans for house events and IGs.
-- Enforces the **7-day advance notice rule** to prevent last-minute, night-before requests.
-
-### 6. Concert Crunch Mode Switch
-- Toggle between **Normal FCFS Mode** and **Concert Mode** (prioritizes official concert acts and enforces tighter practice quotas during peak festival periods).
-
----
-
-## 🚀 Quickstart & Local Development
-
-### Prerequisites
-- Node.js 18+ (tested on Node 20 / 25)
-- npm or pnpm
-
-### Run Locally:
-```bash
-# Clone the repository
-git clone <repo-url>
-cd sharp-franklin
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+```sh
+pnpm install
+pnpm dev
 ```
 
-Visit `http://localhost:3000` in your browser.
+Open http://localhost:3000 and choose **Try the calendar preview**. Sample bookings and registry edits live only in browser memory. Preview never calls booking APIs or sends messages. Live mode requires signed Telegram Mini App data; there is no authentication bypass.
 
----
+## Existing Supabase setup
 
-## 🤖 Connecting the Telegram Bot (Takes 2 Minutes)
+1. Keep the existing `NEXT_PUBLIC_SUPABASE_URL` and Telegram token in `.env.local`.
+2. Run **scripts/abbey.sql** in that project's SQL editor. It creates three new tables and transaction functions, imports existing `licensed_users` handles once, and preserves revocations on reruns. It removes public access to the old portal's tables. Old records are not deleted.
+3. Set `SUPABASE_SERVICE_ROLE_KEY` to the project's server secret/service-role key. Never prefix it with `NEXT_PUBLIC_`, commit it, or share it in chat. The old anonymous key is no longer used.
+4. `TELEGRAM_QM_CHAT_ID` must be the quartermaster's numeric **user ID**, not a group ID. This account has admin access without a registry entry.
+5. Set a random `TELEGRAM_WEBHOOK_SECRET` (16–256 URL-safe characters). Keep `NEXT_PUBLIC_APP_URL=https://the-abbey.vercel.app` for the current deployment.
 
-You can run the portal with full simulated Telegram previews out of the box. To connect your actual Arts CC Telegram group:
+The existing Notion schedule and legacy Supabase bookings are **not imported automatically**. Reconcile upcoming reservations before launch and enter them in the new system. The preview is not a live schedule. Do not announce an empty new calendar as available until existing reservations are entered.
 
-1. **Create the Bot with `@BotFather`**:
-   - Open Telegram and search for `@BotFather`.
-   - Send `/newbot`, choose a name (e.g. `Tembusu Abbey Bot`) and username (e.g. `TembusuAbbeyBot`).
-   - Copy the HTTP API token.
+## Deployment
 
-2. **Add Bot to Arts CC Group Chat**:
-   - Add the bot to your Arts CC or Abbey Door Duty group chat.
-   - Make the bot an administrator so it can send messages and listen for callbacks.
+Deploy to the existing Vercel project. Add the variables in `.env.example` to its production environment and redeploy. The old anonymous key and group-chat variables are unnecessary.
 
-3. **Get the Group Chat ID**:
-   - Add `@RawDataBot` to the group to see the chat ID (starts with `-100...`).
-   - Or run `curl https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates` after sending a test message in the group.
+```sh
+pnpm build
+pnpm bot:check
+pnpm bot:configure
+```
 
-4. **Add to `.env.local`**:
-   ```env
-   TELEGRAM_BOT_TOKEN="123456789:ABCdefGHIjklMNO..."
-   TELEGRAM_ARTS_CC_CHAT_ID="-100123456789"
-   NEXT_PUBLIC_APP_URL="https://your-domain.vercel.app"
-   ```
+`bot:check` is read-only. `bot:configure` verifies @TheAbbeyBot and the deployed app's readiness, then sets its secured webhook, calendar menu and commands. It preserves pending Telegram updates. Open a private chat with the bot and send `/start` first.
 
-5. **Register Webhook** (once deployed):
-   ```bash
-   curl -F "url=https://your-domain.vercel.app/api/telegram/webhook" https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook
-   ```
+The Supabase server key cannot run SQL migrations itself: apply SQL through the dashboard or a database connection. `/api/health` returns readiness only, never records or secrets.
 
----
+## Licensing
 
-## ☁️ 100% Free Deployment on Vercel
+- **Licensed users**: add a handle and name; revoke/restore access.
+- Bot: `/license @handle Name` adds a resident; `/revoke @handle` disables access.
+- The handle binds to the verified Telegram user ID on first use. Access then survives username changes. A different person claiming the old username cannot use a bound license.
+- Before first use, verify the handle with the resident: an unbound username is not permanent proof of identity. The registry shows the originally registered handle, which may differ from the user's current username after binding.
+- Revocation blocks new use immediately, including existing app sessions, but does not cancel confirmed bookings. Account replacements require deliberate registry correction in Supabase.
+- Only the QM can read the registry and other residents' booking names/purposes. Other licensed residents see occupied times, pending counts and their own details.
 
-1. Push your repository to **GitHub**.
-2. Go to [Vercel](https://vercel.com) and click **"Add New Project"**.
-3. Import your GitHub repository.
-4. Add your `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ARTS_CC_CHAT_ID` under **Environment Variables**.
-5. Click **Deploy**. Vercel will build and deploy your app with a free HTTPS domain (e.g. `tembusu-abbey.vercel.app`).
+## Booking behavior
 
----
+- All times are Singapore time; sessions can cross midnight.
+- Pending requests do not hold slots. PostgreSQL prevents overlapping confirmed bookings, including concurrent approvals. Back-to-back sessions are allowed.
+- Request IDs prevent duplicates on retry. Repeat decisions are harmless.
+- Technical bounds: 15-minute duration increments up to 24 hours, requests within the next year, maximum 10 upcoming pending requests per resident. No college opening-hours policy, two-hour quota, annual license expiry or recurring allocations are assumed.
+- Owners can cancel before start. Approval checks the license is still active.
+- Notifications are queued transactionally. Bot interactions retry a batch; `/pending` retrieves the next 10 requests, `/sync` retries queued notifications. No scheduled retry worker is included; after an outage use `/sync` until drained. Delivery is at-least-once, so a crash after sending can cause a duplicate notification, but never a duplicate reservation.
+- Calendar refreshes every minute and manually. Server checks run on submission and approval. Signed sessions expire after an hour; close and reopen the Mini App.
 
-## 📋 Quartermaster Handover Reference
-- **Inventory & Recurring Loans**:
-  - `tKaraoke`: Fridays 8 PM – 12 AM (2 monitors, 2 mics, 2 XLRs, 2 1/4" cables).
-  - `tGrapevine`: Handled in coordination with podcast heads.
-- **Room Access**: All Arts CC members and RAs have card access. Always remind the team to share the door-opening duties so it doesn't fall solely on the QM.
+## Tests
+
+```sh
+pnpm test
+pnpm typecheck
+pnpm build
+```
+
+Tests cover signed identity, invalid sessions, overnight bookings, migration reruns, database permissions, handle binding, revocation, duplicate requests, overlap prevention, cancellation authorization, and notification leases. PostgreSQL integration tests use PGlite locally; no Supabase data or Telegram messages are touched.
+
+Stack: Next.js, Supabase PostgreSQL, Telegram Bot API. Equipment loans, door dispatch, checkout photos and separate admin logins have been removed.

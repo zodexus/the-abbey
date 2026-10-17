@@ -1,131 +1,36 @@
-import { Booking, EquipmentLoan, TelegramSimulatedMessage } from './types';
+import { db } from './server';
 
-export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-export const TELEGRAM_QM_CHAT_ID = process.env.TELEGRAM_QM_CHAT_ID || '1140443964';
-export const TELEGRAM_ABBEY_LICENSED_CHAT_ID =
-  process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID || process.env.TELEGRAM_ARTS_CC_CHAT_ID || '-1003933261200';
-export const TELEGRAM_ARTS_CC_CHAT_ID = TELEGRAM_ABBEY_LICENSED_CHAT_ID;
-
-/**
- * Resolve known resident telegram handles to numeric Telegram chat IDs
- */
-export function resolveUserChatId(handle: string): string | null {
-  const clean = handle.replace('@', '').trim().toLowerCase();
-  if (clean === 'mezyyy') return '1140443964';
-  return null;
+export async function telegram(method: string, body: Record<string, unknown>) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) throw new Error('Telegram not configured');
+  const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(10000) });
+  const result = await response.json();
+  if (!result.ok) throw new Error('Telegram request failed');
+  return result.result;
 }
-
-/**
- * Format DM sent directly to Quartermaster (@mezyyy)
- */
-export function formatQMDMMessage(booking: Booking): string {
-  const unlockStatus = booking.needsDoorUnlock
-    ? '⚠️ Yes (requires someone to help unlock)'
-    : 'No (has door access)';
-
-  return (
-    `🎸 *New Abbey Booking Request*\n\n` +
-    `📅 *Date:* ${booking.date}\n` +
-    `⏰ *Time:* ${booking.startTime} – ${booking.endTime}\n` +
-    `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
-    `🎯 *Practice for / Purpose:* ${booking.purpose}\n` +
-    `🔑 *Needs Unlock:* ${unlockStatus}\n\n` +
-    `Tap below to approve or reject:`
-  );
+export const send = (chat: string | number, text: string, reply_markup?: unknown) => telegram('sendMessage', { chat_id: chat, text, ...(reply_markup ? { reply_markup } : {}) });
+export function calendarButton() {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url?.startsWith('https://')) return undefined;
+  return { inline_keyboard: [[{ text: 'Open Abbey calendar', web_app: { url } }]] };
 }
-
-/**
- * Format Loan DM sent directly to Quartermaster (@mezyyy)
- */
-export function formatQMLoanMessage(loan: EquipmentLoan): string {
-  return (
-    `📦 *New Equipment Loan Request*\n\n` +
-    `👤 *Requester:* ${loan.requesterName} (${loan.telegramHandle})\n` +
-    `🏛️ *Committee:* ${loan.committee}\n` +
-    `🎯 *Purpose:* ${loan.purpose}\n` +
-    `📅 *Dates:* ${loan.startDate} to ${loan.endDate}\n` +
-    `⏰ *Time:* ${loan.startTime || '18:00'} – ${loan.endTime || '22:00'}\n` +
-    `📦 *Package:* ${loan.basePackage}\n` +
-    `🔧 *Gear:* ${loan.equipmentList.join('; ') || 'None'}\n\n` +
-    `Tap below to approve or reject:`
-  );
+export function bookingSummary(b: { resident_name: string; purpose: string; starts_at: string; ends_at: string }) {
+  const format = (date: string) => new Date(date).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  return `${b.resident_name}\n${format(b.starts_at)} → ${format(b.ends_at)} (SGT)\n${b.purpose}`;
 }
-
-/**
- * Format door opening dispatch message for Abbey Licensed Telegram Group (sent 12h before timeslot)
- */
-export function formatDoorOpeningMessage(booking: Booking): { text: string; inlineKeyboard: any } {
-  const text =
-    `🎸 *Abbey Booking — Unlock Needed*\n\n` +
-    `📅 *Date:* ${booking.date}\n` +
-    `⏰ *Time:* ${booking.startTime} – ${booking.endTime}\n` +
-    `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
-    `👥 *Band:* ${booking.bandName}\n\n` +
-    `Can anyone in hall help unlock the Abbey? Tap below to claim:`;
-
-  const inlineKeyboard = {
-    inline_keyboard: [
-      [
-        {
-          text: '🔑 I can unlock the Abbey',
-          callback_data: `claim_door:${booking.id}`,
-        },
-      ],
-    ],
-  };
-
-  return { text, inlineKeyboard };
-}
-
-/**
- * Format message when a duty member claims door opening
- */
-export function formatDoorClaimedMessage(booking: Booking, claimerHandle: string): string {
-  return `✅ *ABBEY DOOR CLAIMED* ✅\n\n` +
-    `📅 *Date:* ${booking.date} (${booking.startTime} – ${booking.endTime})\n` +
-    `👤 *Booker:* ${booking.residentName} (${booking.telegramHandle})\n` +
-    `🔑 *Door Opener:* @${claimerHandle.replace('@', '')} has claimed this duty!\n\n` +
-    `_Booker has been notified via Telegram._`;
-}
-
-/**
- * Format end-of-session photo check-out reminder for the resident
- */
-export function formatCheckoutReminderMessage(booking: Booking): string {
-  return `⏳ *ABBEY BOOKING ENDING IN 15 MINS* ⏳\n\n` +
-    `Hey ${booking.residentName}, your booking ends at *${booking.endTime}*.\n\n` +
-    `*Mandatory Clean-Up Checklist:*\n` +
-    `1. Turn off all guitar/bass amps and mixer switches.\n` +
-    `2. Coil all XLR & 1/4" jack cables neatly and hang them.\n` +
-    `3. Return microphones into the foam mic box.\n` +
-    `4. Clear all trash, water bottles, and belongings.\n\n` +
-    `📸 *Please reply directly to this message with a photo of the Abbey* to log your check-out!`;
-}
-
-/**
- * Dispatch real Telegram message if credentials exist
- */
-export async function sendTelegramMessage(chatId: string, text: string, replyMarkup?: any) {
-  if (!TELEGRAM_BOT_TOKEN) {
-    console.log(`[Telegram Simulation] Would send to ${chatId}:\n${text}`);
-    return { success: false, simulated: true };
+// Persist notifications with the booking transaction; retry via /pending and /sync.
+export async function flushNotifications() {
+  const { data, error } = await db().rpc('abbey_take_notifications');
+  if (error) return false;
+  let success = true;
+  for (const n of data || []) {
+    try {
+      await send(n.chat_id, n.body, n.markup || undefined);
+      await db().from('abbey_notifications').update({ sent_at: new Date().toISOString(), locked_until: null }).eq('id', n.id);
+    } catch {
+      success = false;
+      await db().from('abbey_notifications').update({ locked_until: null }).eq('id', n.id);
+    }
   }
-
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown',
-        reply_markup: replyMarkup,
-      }),
-    });
-    const data = await res.json();
-    return { success: data.ok, data };
-  } catch (error) {
-    console.error('Failed to dispatch Telegram message:', error);
-    return { success: false, error };
-  }
+  return success;
 }

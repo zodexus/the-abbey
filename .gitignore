@@ -5,6 +5,8 @@ node_modules/
 
 # Next.js build output
 .next/
+.next-abbey/
+.pnpm-store/
 out/
 build/
 dist/
@@ -24,3 +26,5 @@ yarn-error.log*
 # OS files
 .DS_Store
 *.pem
+*.tsbuildinfo
+artifacts/
