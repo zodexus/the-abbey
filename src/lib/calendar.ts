@@ -1,4 +1,6 @@
-export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const singaporeDayFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' });
+const timeFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit' });
+export const today = () => singaporeDayFormatter.format(new Date());
 export const halfHourTimes = Array.from({ length: 48 }, (_, i) => {
   const hour = Math.floor(i / 2);
   return { value: `${String(hour).padStart(2,'0')}:${i % 2 ? '30' : '00'}`, label: `${hour % 12 || 12}${i % 2 ? '.30' : ''}${hour < 12 ? 'am' : 'pm'}` };
@@ -19,5 +21,17 @@ export function monthDays(month: string) {
   return Array.from({ length: Math.ceil((offset + count) / 7) * 7 }, (_, i) => shiftDay(first, i - offset));
 }
 export const dateLabel = (date: string, options: Intl.DateTimeFormatOptions) => new Date(date.length === 10 ? `${date}T12:00:00+08:00` : date).toLocaleDateString('en-US', { timeZone: 'Asia/Singapore', ...options });
-export const clock = (date: string) => new Date(date).toLocaleTimeString('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit' });
-export const singaporeDate = (date: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(date));
+export const clock = (date: string) => timeFormatter.format(new Date(date));
+export const singaporeDate = (date: string) => singaporeDayFormatter.format(new Date(date));
+export const slotLabel = (start: string, end: string) => `${dateLabel(start, { day: 'numeric', month: 'short' })}, ${clock(start)} → ${dateLabel(end, { day: 'numeric', month: 'short' })}, ${clock(end)} SGT`;
+export function bookingsByDay<T extends { starts_at: string; ends_at: string }>(bookings: T[], firstDay: string) {
+  const result = new Map<string, T[]>();
+  for (const booking of bookings) {
+    const startDay = singaporeDate(booking.starts_at);
+    const day = startDay < firstDay && Date.parse(booking.ends_at) > Date.parse(`${firstDay}T00:00:00+08:00`) ? firstDay : startDay;
+    const rows = result.get(day) || [];
+    rows.push(booking);
+    result.set(day, rows);
+  }
+  return result;
+}
