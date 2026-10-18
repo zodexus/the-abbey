@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { monthDays, shiftMonth, singaporeDate } from '../src/lib/calendar.ts';
-import { bookingsByDay, halfHourTimes, slotLabel, sortBookings } from '../src/lib/calendar.ts';
+import { bookingsByDay, calendarRangeLabel, fortnightDays, halfHourTimes, slotLabel, sortBookings } from '../src/lib/calendar.ts';
 import { notificationText } from '../src/lib/notification-text.ts';
 test('half-hour selector covers the full day and calendar sorts actual instants',()=>{
   assert.equal(halfHourTimes.length,48);
@@ -27,6 +27,15 @@ test('Sunday-first calendar includes full weeks across year and leap-month bound
   assert.equal(shiftMonth('2026-01-01',-1),'2025-12-01');
 });
 test('Singapore date differs from UTC near midnight',()=>assert.equal(singaporeDate('2026-10-17T17:00:00Z'),'2026-10-18'));
+test('two-week view starts on the selected date and spans exactly 14 days across month/year boundaries',()=> {
+  assert.equal(fortnightDays('2026-10-18').length,14);
+  assert.equal(fortnightDays('2026-10-18')[0],'2026-10-18');
+  assert.equal(fortnightDays('2026-10-18').at(-1),'2026-10-31');
+  assert.equal(fortnightDays('2026-10-25').at(-1),'2026-11-07');
+  assert.equal(fortnightDays('2026-12-27').at(-1),'2027-01-09');
+  assert.ok(fortnightDays('2028-02-25').includes('2028-02-29'));
+  assert.match(calendarRangeLabel('2026-12-27'),/2026.*2027/);
+});
 test('pending confirmations show both dates for an overnight booking',()=> {
   const label = slotLabel('2026-10-23T23:00:00+08:00','2026-10-24T00:30:00+08:00');
   assert.match(label,/Oct 23/);

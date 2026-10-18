@@ -2,14 +2,14 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Script from 'next/script';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, Search, UserRound, X } from 'lucide-react';
-import { bookingsByDay, clock, halfHourTimes, sortBookings, dateLabel, monthDays, shiftDay, shiftMonth, singaporeDate, slotLabel, today } from '@/lib/calendar';
+import { bookingsByDay, clock, halfHourTimes, sortBookings, dateLabel, calendarRangeLabel, fortnightDays, shiftDay, singaporeDate, slotLabel, today } from '@/lib/calendar';
 
 type Booking = { id: string; starts_at: string; ends_at: string; status: string; mine: boolean; resident_name: string; purpose: string };
 type Session = { name: string; admin: boolean; userId: number };
 type BookingForm = { date: string; time: string; duration: number; name: string; purpose: string; requestId: string };
 declare global { interface Window { Telegram?: { WebApp: { initData: string; ready: () => void; expand: () => void } } } }
-function samples(month: string): Booking[] {
-  return ['Kevin Tan','Sonia','Rachel','Jonathan','Supperific Kit Yee','Daniella','Tempo'].flatMap((name, i) => [1, 2, 3].map(n => ({ id: `sample-${i}-${n}`, starts_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '13' : n === 2 ? '17' : '20'}:00:00+08:00`, ends_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '15' : n === 2 ? '19' : '22'}:00:00+08:00`, resident_name: name, purpose: 'Band practice', status: 'confirmed', mine: i === 0 })));
+function samples(firstDay: string): Booking[] {
+  return ['Kevin Tan','Sonia','Rachel','Jonathan','Supperific Kit Yee','Daniella','Tempo'].flatMap((name, i) => [1, 2].map(n => ({ id: `sample-${i}-${n}`, starts_at: `${shiftDay(firstDay, i * 2 + n - 1)}T${n === 1 ? '13' : n === 2 ? '17' : '20'}:00:00+08:00`, ends_at: `${shiftDay(firstDay, i * 2 + n - 1)}T${n === 1 ? '15' : n === 2 ? '19' : '22'}:00:00+08:00`, resident_name: name, purpose: 'Band practice', status: 'confirmed', mine: i === 0 })));
 }
 const BookingSearch = memo(function BookingSearch({ onSearch }: { onSearch: (value: string) => void }) {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -25,29 +25,56 @@ const BookingSearch = memo(function BookingSearch({ onSearch }: { onSearch: (val
     onCompositionStart={() => { composing.current = true; clearTimeout(timer.current); }}
     onCompositionEnd={event => { composing.current = false; schedule(event.currentTarget.value); }}/>;
 });
-const MonthlyCalendar = memo(function MonthlyCalendar({ month, bookings, loading, currentDay, onBook, onSelect }: {
-  month: string; bookings: Booking[]; loading: boolean; currentDay: string;
+const BookingCard = memo(function BookingCard({ booking: b, onSelect }: { booking: Booking; onSelect: (booking: Booking) => void }) {
+  return <button className={`event ${b.status}`} onClick={() => onSelect(b)} aria-label={`${b.resident_name}, ${clock(b.starts_at)} to ${clock(b.ends_at)}, ${b.status}`}>
+    <span className="event-heading"><strong>{b.resident_name || 'Booked'}</strong><span className="event-time">{clock(b.starts_at)} - {clock(b.ends_at)}{singaporeDate(b.ends_at) !== singaporeDate(b.starts_at) && <small> (+1 day)</small>}</span></span>
+    <span className="event-purpose">{b.purpose && b.purpose !== 'Imported from Notion' ? b.purpose : 'Purpose not recorded'}</span>{b.status === 'pending' && <span className="pending-label">Pending</span>}
+  </button>;
+});
+const FortnightCalendar = memo(function FortnightCalendar({ firstDay, bookings, loading, currentDay, onBook, onSelect }: {
+  firstDay: string; bookings: Booking[]; loading: boolean; currentDay: string;
   onBook: (date: string) => void; onSelect: (booking: Booking) => void;
 }) {
-  const days = useMemo(() => monthDays(month), [month]);
-  const byDay = useMemo(() => bookingsByDay(bookings, days[0]), [bookings, days]);
-  return <div className="calendar-scroll" role="region" aria-label="Monthly calendar, Singapore time" tabIndex={0}>
-          <div className="calendar" aria-busy={loading}><div className="weekdays">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day => <div key={day}>{day}</div>)}</div>
-            {Array.from({length:days.length / 7},(_,week) => <div className="calendar-week" key={week}>{days.slice(week * 7,week * 7 + 7).map((date,i) => {
-              const rows = byDay.get(date) || [];
-              return <section key={date} aria-label={dateLabel(date,{weekday:'long',month:'long',day:'numeric'})} className={`day ${i === 0 || i === 6 ? 'weekend' : ''} ${date.slice(0,7) !== month.slice(0,7) ? 'outside' : ''}`}>
-                <div className="day-heading">{date >= currentDay && <button className="day-add" aria-label={`Book ${date}`} onClick={() => onBook(date)}><Plus size={19}/></button>}<span className={date === currentDay ? 'date current' : 'date'}>{date.endsWith('-01') ? dateLabel(date,{month:'short',day:'numeric'}) : Number(date.slice(-2))}</span></div>
-                {rows.map(b => <button key={b.id} className={`event ${b.status}`} onClick={() => onSelect(b)} aria-label={`${b.resident_name}, ${clock(b.starts_at)} to ${clock(b.ends_at)}, ${b.status}`}><span className="event-heading"><strong>{b.resident_name || 'Booked'}</strong><span className="event-time">{clock(b.starts_at)} - {clock(b.ends_at)}{singaporeDate(b.ends_at) !== singaporeDate(b.starts_at) && <small> (+1 day)</small>}</span></span><span className="event-purpose">{b.purpose && b.purpose !== 'Imported from Notion' ? b.purpose : 'Purpose not recorded'}</span>{b.status === 'pending' && <span className="pending-label">Pending</span>}</button>)}
-              </section>;
-            })}</div>)}
-          </div>
-        </div>;
+  const days = useMemo(() => fortnightDays(firstDay), [firstDay]);
+  const byDay = useMemo(() => bookingsByDay(bookings, firstDay), [bookings, firstDay]);
+  const [selectedDay, setSelectedDay] = useState(firstDay);
+  const activeDay = days.includes(selectedDay) ? selectedDay : firstDay;
+  const rows = byDay.get(activeDay) || [];
+  return <section className="fortnight-calendar" aria-label="Two-week calendar, Singapore time" aria-busy={loading}>
+    <div className="desktop-calendar">
+      <div className="weekdays">{days.slice(0,7).map(date => <div key={date}>{dateLabel(date,{weekday:'short'})}</div>)}</div>
+      {[0,1].map(week => <div className="calendar-week" key={week}>{days.slice(week * 7,week * 7 + 7).map(date => {
+        const weekend = [0,6].includes(new Date(`${date}T12:00:00Z`).getUTCDay());
+        const dayRows = byDay.get(date) || [];
+        return <section key={date} aria-label={dateLabel(date,{weekday:'long',month:'long',day:'numeric'})} className={`day ${weekend ? 'weekend' : ''}`}>
+          <div className="day-heading">{date >= currentDay && <button className="day-add" aria-label={`Book ${date}`} onClick={() => onBook(date)}><Plus size={18}/></button>}<span className={date === currentDay ? 'date current' : 'date'}>{date.endsWith('-01') ? dateLabel(date,{month:'short',day:'numeric'}) : Number(date.slice(-2))}</span></div>
+          {dayRows.map(booking => <BookingCard key={booking.id} booking={booking} onSelect={onSelect}/>)}
+        </section>;
+      })}</div>)}
+    </div>
+    <div className="mobile-calendar">
+      {[0,1].map(week => <div className="week-picker" key={week}>
+        <p className="week-label">{dateLabel(days[week * 7],{month:'short',day:'numeric'})} – {dateLabel(days[week * 7 + 6],{month:'short',day:'numeric'})}</p>
+        <div className="week-dates">{days.slice(week * 7,week * 7 + 7).map(date => {
+          const count = (byDay.get(date) || []).length;
+          return <button key={date} className={`date-choice ${date === currentDay ? 'is-today' : ''}`} aria-pressed={date === activeDay} aria-label={`View ${dateLabel(date,{weekday:'long',month:'long',day:'numeric'})}, ${count} ${count === 1 ? 'booking' : 'bookings'}`} onClick={() => setSelectedDay(date)}>
+            <span className="choice-weekday">{dateLabel(date,{weekday:'short'})}</span><strong>{Number(date.slice(-2))}</strong><span className="choice-count" aria-hidden="true">{count || '·'}</span>
+          </button>;
+        })}</div>
+      </div>)}
+      <section className="day-agenda" aria-label={`Bookings for ${activeDay}`}>
+        <div className="agenda-heading"><h3>{dateLabel(activeDay,{weekday:'long',month:'short',day:'numeric'})}{activeDay === currentDay && <span className="today-label">Today</span>}</h3>{activeDay >= currentDay && <button className="primary" onClick={() => onBook(activeDay)}><Plus size={16}/> Book this day</button>}</div>
+        {rows.map(booking => <BookingCard key={booking.id} booking={booking} onSelect={onSelect}/>)}
+        {!rows.length && <p className="empty-day">{loading ? 'Loading bookings…' : 'No bookings for this day.'}</p>}
+      </section>
+    </div>
+  </section>;
 });
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [demo, setDemo] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [month, setMonth] = useState(() => `${today().slice(0,7)}-01`);
+  const [firstDay, setFirstDay] = useState(today);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [mine, setMine] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -81,10 +108,10 @@ export default function Home() {
     if (!session || demo || modalOpen) return;
     let live = true;
     setLoading(true); setError(''); setBookings([]);
-    api(`/api/bookings?date=${monthDays(month)[0]}`).then(result => { if (live) setBookings(result.bookings); })
+    api(`/api/bookings?date=${firstDay}`).then(result => { if (live) setBookings(result.bookings); })
       .catch(e => { if (live) setError(e.message); }).finally(() => { if (live) setLoading(false); });
     return () => { live = false; };
-  }, [session, demo, month, revision, modalOpen]);
+  }, [session, demo, firstDay, revision, modalOpen]);
   useEffect(() => {
     if (!session || demo || modalOpen) return;
     const timer = setInterval(() => setRevision(v => v + 1), 60000);
@@ -109,7 +136,7 @@ export default function Home() {
     document.addEventListener('keydown', keydown);
     return () => { document.removeEventListener('keydown', keydown); document.body.style.overflow = previousOverflow; previous?.focus({ preventScroll: true }); };
   }, [modalOpen]);
-  function preview() { setDemo(true); setSession({ name: 'Alex', admin: true, userId: 1 }); setBookings(samples(month)); }
+  function preview() { setDemo(true); setSession({ name: 'Alex', admin: true, userId: 1 }); setBookings(samples(firstDay)); }
   const openForm = useCallback((date = today()) => {
     const minutes = date === today() ? Math.ceil((Date.now() - Date.parse(`${date}T00:00:00+08:00`)) / 1800000) * 30 : 18 * 60;
     setError(''); setNotice('');
@@ -134,7 +161,7 @@ export default function Home() {
         await api('/api/bookings', 'POST', submitted);
         setNotice(`Pending approval: ${slotLabel(start.toISOString(), end.toISOString())}. Tap your pending booking to cancel.`);
       }
-      setMonth(`${submitted.date.slice(0,7)}-01`); setForm(null); setRevision(v => v + 1);
+      setFirstDay(current => submitted.date >= current && submitted.date <= shiftDay(current,13) ? current : submitted.date); setForm(null); setRevision(v => v + 1);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
   async function cancel() {
@@ -161,8 +188,8 @@ export default function Home() {
         {searching && <BookingSearch onSearch={setSearch}/>}
         {notice && <div role="status" className="notice">{notice}<button aria-label="Dismiss" onClick={() => setNotice('')}><X size={16}/></button></div>}
         {error && !form && !selected && <p role="alert" className="error">{error}</p>}
-        <div className="month-bar"><h2>{dateLabel(month,{ month:'long',year:'numeric' })}{mine && <span className="filter-label"> · My bookings</span>}</h2><div className="navigation"><button aria-label="Previous month" onClick={() => setMonth(shiftMonth(month,-1))}><ChevronLeft/></button><button onClick={() => setMonth(`${today().slice(0,7)}-01`)}>Today</button><button aria-label="Next month" onClick={() => setMonth(shiftMonth(month,1))}><ChevronRight/></button></div></div>
-        <MonthlyCalendar month={month} bookings={visible} loading={loading} currentDay={today()} onBook={openForm} onSelect={selectBooking}/>
+        <div className="range-bar"><div><p className="range-caption">Two weeks · SGT{mine ? ' · My bookings' : ''}</p><h2>{calendarRangeLabel(firstDay)}</h2></div><div className="navigation"><button aria-label="Previous two weeks" onClick={() => setFirstDay(shiftDay(firstDay,-14))}><ChevronLeft/></button><button onClick={() => setFirstDay(today())}>Today</button><button aria-label="Next two weeks" onClick={() => setFirstDay(shiftDay(firstDay,14))}><ChevronRight/></button></div></div>
+        <FortnightCalendar firstDay={firstDay} bookings={visible} loading={loading} currentDay={today()} onBook={openForm} onSelect={selectBooking}/>
         {loading && <p role="status" className="loading">Loading…</p>}
       </>}
     </main>

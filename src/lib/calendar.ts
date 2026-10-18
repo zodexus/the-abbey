@@ -9,6 +9,12 @@ export function sortBookings<T extends { starts_at: string; resident_name: strin
   return [...bookings].sort((a,b) => Date.parse(a.starts_at) - Date.parse(b.starts_at) || a.resident_name.localeCompare(b.resident_name));
 }
 export const shiftDay = (date: string, days: number) => new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
+export const fortnightDays = (firstDay: string) => Array.from({ length: 14 }, (_, index) => shiftDay(firstDay, index));
+export function calendarRangeLabel(firstDay: string) {
+  const lastDay = shiftDay(firstDay, 13);
+  const first = dateLabel(firstDay, { day: 'numeric', month: 'short', ...(firstDay.slice(0, 4) !== lastDay.slice(0, 4) ? { year: 'numeric' as const } : {}) });
+  return `${first} – ${dateLabel(lastDay, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+}
 export function shiftMonth(month: string, delta: number) {
   const date = new Date(`${month.slice(0, 7)}-01T12:00:00Z`);
   date.setUTCMonth(date.getUTCMonth() + delta);
