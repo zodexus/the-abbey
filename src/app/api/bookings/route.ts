@@ -4,7 +4,7 @@ import { flushNotifications } from '@/lib/telegram';
 export const runtime = 'nodejs';
 export async function GET(request: Request) {
   try {
-    const { user, admin } = await authenticate(request);
+    const { user } = await authenticate(request);
     const url = new URL(request.url);
     const date = url.searchParams.get('date') || '';
     const mine = url.searchParams.get('mine') === '1';
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       id: b.id, starts_at: b.starts_at, ends_at: b.ends_at, status: b.status,
       mine: b.telegram_user_id === user.id,
       resident_name: b.resident_name,
-      purpose: admin || b.telegram_user_id === user.id ? b.purpose : '',
+      purpose: b.purpose,
     })) }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) { return failure(e); }
 }

@@ -50,7 +50,7 @@ To revoke access, edit the row and set **active = false**. To restore it, set **
 
 Use the table's filter on **handle** or **name** to find a person. Do not clear or change a bound **telegram_user_id** just because their username changed: the stable ID keeps their access attached to the right account. Before first use, verify the handle with the resident. The QM account has admin access through TELEGRAM_QM_CHAT_ID.
 
-Licensed residents can see booking names and times, as in the former Notion calendar. Purposes remain visible only to the owner and QM. The registry has no public or in-app endpoint.
+Licensed residents can see booking names, start/end times, and purposes on the calendar cards. Tapping a card shows full booking details. The registry has no public or in-app endpoint.
 
 ## Booking behavior
 
