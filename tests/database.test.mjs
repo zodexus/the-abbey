@@ -82,5 +82,14 @@ test('booking and registry database integration', async t => {
       const next = (await query('select * from abbey_take_notifications()')).rows;
       assert.ok(next.every(n=>!batch.some(b=>b.id===n.id)));
     });
+    await t.test('group registration supports accounts without usernames and never overwrites revocations', async()=> {
+      const register = () => query("insert into abbey_licenses(handle,name,telegram_user_id,active) values ('telegram:4','Group member',4,true) on conflict (telegram_user_id) do nothing");
+      await register();
+      assert.equal((await claim(4,'')).rows.length,1);
+      await query('update abbey_licenses set active=false where telegram_user_id=4');
+      await register();
+      assert.equal((await claim(4,'')).rows.length,0);
+      assert.equal((await query('select active from abbey_licenses where telegram_user_id=4')).rows[0].active,false);
+    });
   } finally { await pg.close(); }
 });

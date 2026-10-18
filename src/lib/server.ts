@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { AppError, validateInitData, type TelegramUser } from './security';
+import { GroupAccessError, groupLicense, isGroupMember } from './group-access';
 
 export function db() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,6 +13,40 @@ export function isAdmin(user: TelegramUser) {
 }
 export async function licensed(user: TelegramUser) {
   if (isAdmin(user)) return { user, admin: true, name: user.first_name };
+  const group = process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID;
+  if (group) {
+    const client = db();
+    const unavailable = () => new AppError('The licensing registry is unavailable. Please contact the quartermaster.', 503);
+    try {
+      const license = await groupLicense(user, {
+        member: () => isGroupMember(user.id, group, process.env.TELEGRAM_BOT_TOKEN || ''),
+        claim: async () => {
+          const { data, error } = await client.rpc('abbey_claim_license', { p_user_id: user.id, p_handle: user.username?.toLowerCase() || '' });
+          if (error) throw unavailable();
+          return data?.[0] || null;
+        },
+        bound: async () => {
+          const { data, error } = await client.from('abbey_licenses').select('name,active').eq('telegram_user_id', user.id).maybeSingle();
+          if (error) throw unavailable();
+          return data;
+        },
+        revokedHandle: async () => {
+          if (!user.username) return false;
+          const { data, error } = await client.from('abbey_licenses').select('id').eq('handle', user.username.toLowerCase()).is('telegram_user_id', null).eq('active', false).maybeSingle();
+          if (error) throw unavailable();
+          return Boolean(data);
+        },
+        create: async row => {
+          const { error } = await client.from('abbey_licenses').upsert(row, { onConflict: 'telegram_user_id', ignoreDuplicates: true });
+          if (error) throw unavailable();
+        },
+      });
+      return { user, admin: false, name: license.name || user.first_name };
+    } catch (error) {
+      if (error instanceof GroupAccessError) throw new AppError(error.message, error.status);
+      throw error;
+    }
+  }
   const { data, error } = await db().rpc('abbey_claim_license', { p_user_id: user.id, p_handle: user.username?.toLowerCase() || '' });
   if (error) throw new AppError('The licensing registry is unavailable. Please contact the quartermaster.', 503);
   if (!data?.length) throw new AppError('Access is for Abbey-licensed residents. Ask the quartermaster to add your Telegram handle.', 403);

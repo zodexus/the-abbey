@@ -1,6 +1,6 @@
 # The Abbey
 
-A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and cancel their own bookings. The quartermaster approves or rejects in **@TheAbbeyBot**. Licensed handles are managed directly in Supabase.
+A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and cancel their own bookings. The quartermaster approves or rejects in **@TheAbbeyBot**. Members of **Abbey Licensed ’26/27** can access the calendar automatically when group access is configured.
 
 ## Local preview
 
@@ -25,7 +25,7 @@ Notion import: `scripts/import-notion.mjs` reconciles the saved October calendar
 
 ## Deployment
 
-Deploy to the existing Vercel project. Add the variables in `.env.example` to its production environment and redeploy. The old anonymous key and group-chat variables are unnecessary.
+Deploy to the existing Vercel project. Add the variables in `.env.example` to its production environment and redeploy. The old anonymous key and `TELEGRAM_ARTS_CC_CHAT_ID` are unnecessary.
 
 ```sh
 pnpm build
@@ -37,14 +37,26 @@ pnpm bot:configure
 
 The Supabase server key cannot run SQL migrations itself: apply SQL through the dashboard or a database connection. `/api/health` returns readiness only, never records or secrets.
 
-## Licensing: edit in Supabase
+## Access through Abbey Licensed membership
+
+1. Make **@TheAbbeyBot** an administrator in **Abbey Licensed ‘26/27 🎶**.
+2. Set `TELEGRAM_ABBEY_LICENSED_CHAT_ID=-1003933261200` in the server environment (including Vercel production) and redeploy.
+3. Residents open the bot privately, send `/start`, and tap **Calendar**. No manual handle entry is needed, including for members without a username.
+
+The server validates signed Telegram identity and checks current group membership on every calendar/booking request and before approving a pending booking. Leaving or removal blocks subsequent API requests; existing bookings are retained. Previously loaded calendar data cannot be withdrawn from someone's screen. Telegram verification failures deny access temporarily rather than falling back to the registry. The QM retains admin access.
+
+Members are automatically linked to existing active licenses or registered by stable Telegram ID, so existing booking transactions continue to work without a database migration. Automatically created rows use a reserved `telegram:<user ID>` handle. Explicit `active = false` revocations still block access. Do not delete a revoked row: deletion allows a current group member to register again.
+
+Run `pnpm bot:check` to verify that the configured bot is an administrator in the correct group. Without `TELEGRAM_ABBEY_LICENSED_CHAT_ID`, the app retains registry-only access as described below.
+
+## Registry-only access and manual revocation
 
 Open https://supabase.com/dashboard/project/mmkwxgmunvcvpslvxugb/editor and select **public.abbey_licenses** (not the old licensed_users table).
 
 1. Click **Insert → Insert row**.
 2. Enter **handle** in lowercase without @, e.g. tembusian_name, and **name**.
 3. Keep **active = true**. Leave **id** and **created_at** at their defaults, and **telegram_user_id** empty (NULL). Save.
-4. The resident opens @TheAbbeyBot, sends /start, and taps **Calendar**. Their Telegram account ID binds automatically on first use.
+4. The resident opens @TheAbbeyBot, sends /start, and taps **Calendar**. Their Telegram account ID binds automatically on first use. With group access enabled, they must also belong to the configured group.
 
 To revoke access, edit the row and set **active = false**. To restore it, set **active = true**. Changes apply on the next API request, including existing sessions. No deployment is needed. Revoking a license does not cancel existing bookings.
 

@@ -13,6 +13,13 @@ try {
   const me = await call('getMe');
   if (me.username?.toLowerCase() !== 'theabbeybot') throw new Error('The configured token does not belong to @TheAbbeyBot. No changes made.');
   console.log(`Verified bot: @${me.username}`);
+  const groupId = process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID;
+  if (groupId) {
+    const group = await call('getChat', { chat_id: groupId });
+    const membership = await call('getChatMember', { chat_id: groupId, user_id: me.id });
+    console.log(`Access group: ${group.title}; bot status: ${membership.status}`);
+    if (!['administrator', 'creator'].includes(membership.status)) throw new Error('Promote @TheAbbeyBot to an admin in Abbey Licensed before enabling group access.');
+  }
   const info = await call('getWebhookInfo');
   console.log(`Webhook: ${info.url || 'not configured'}; pending updates: ${info.pending_update_count}`);
   console.log(`Supabase server secret: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? 'present' : 'missing'}`);

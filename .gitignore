@@ -5,7 +5,6 @@ node_modules/
 
 # Next.js build output
 .next/
-.next-abbey/
 .pnpm-store/
 out/
 build/

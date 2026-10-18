@@ -18,6 +18,11 @@ export async function POST(request: Request) {
         if (!isAdmin(user)) throw new AppError('Only the quartermaster can approve bookings.', 403);
         const match = /^(approve|reject):([0-9a-f-]{36})$/i.exec(callback.data || '');
         if (!match) throw new AppError('This button belongs to an older version. Use /pending.');
+        if (match[1] === 'approve' && process.env.TELEGRAM_ABBEY_LICENSED_CHAT_ID) {
+          const { data: booking, error: lookupError } = await db().from('abbey_bookings').select('telegram_user_id,resident_name,status').eq('id', match[2]).maybeSingle();
+          if (lookupError) throw new AppError('Could not verify the booking. Please try again.', 503);
+          if (booking?.status === 'pending') await licensed({ id: Number(booking.telegram_user_id), first_name: booking.resident_name });
+        }
         const { data, error } = await db().rpc('abbey_decide', { p_id: match[2], p_status: match[1] === 'approve' ? 'confirmed' : 'rejected', p_actor: user.id, p_qm: process.env.TELEGRAM_QM_CHAT_ID });
         if (error) throw new AppError(error.code === '23P01' ? 'This overlaps an approved booking. Reject it or choose another slot.' : 'Cannot update: already handled, started, or the license was revoked.');
         // Deliver the resident's decision even if the old approval card can no longer be edited.
