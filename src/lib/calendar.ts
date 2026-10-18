@@ -1,4 +1,11 @@
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+export const halfHourTimes = Array.from({ length: 48 }, (_, i) => {
+  const hour = Math.floor(i / 2);
+  return { value: `${String(hour).padStart(2,'0')}:${i % 2 ? '30' : '00'}`, label: `${hour % 12 || 12}${i % 2 ? '.30' : ''}${hour < 12 ? 'am' : 'pm'}` };
+});
+export function sortBookings<T extends { starts_at: string; resident_name: string }>(bookings: T[]): T[] {
+  return [...bookings].sort((a,b) => Date.parse(a.starts_at) - Date.parse(b.starts_at) || a.resident_name.localeCompare(b.resident_name));
+}
 export const shiftDay = (date: string, days: number) => new Date(Date.parse(`${date}T12:00:00Z`) + days * 86400000).toISOString().slice(0, 10);
 export function shiftMonth(month: string, delta: number) {
   const date = new Date(`${month.slice(0, 7)}-01T12:00:00Z`);

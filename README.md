@@ -57,7 +57,7 @@ Licensed residents can see booking names and times, as in the former Notion cale
 - All times are Singapore time; sessions can cross midnight.
 - Pending requests do not hold slots. PostgreSQL prevents overlapping confirmed bookings, including concurrent approvals. Back-to-back sessions are allowed.
 - Request IDs prevent duplicates on retry. Repeat decisions are harmless.
-- Technical bounds: 15-minute duration increments up to 24 hours, requests within the next year, maximum 10 upcoming pending requests per resident. No college opening-hours policy, two-hour quota, annual license expiry or recurring allocations are assumed.
+- Technical bounds: Half-hour start times and duration increments, shown in hours, up to 24 hours, requests within the next year, maximum 10 upcoming pending requests per resident. No college opening-hours policy, two-hour quota, annual license expiry or recurring allocations are assumed.
 - Owners can cancel before start. Approval checks the license is still active.
 - Notifications are queued transactionally. Bot interactions retry a batch; `/pending` retrieves the next 10 requests, `/sync` retries queued notifications. No scheduled retry worker is included; after an outage use `/sync` until drained. Delivery is at-least-once, so a crash after sending can cause a duplicate notification, but never a duplicate reservation.
 - Calendar refreshes every minute and manually. Server checks run on submission and approval. Signed sessions expire after an hour; close and reopen the Mini App.

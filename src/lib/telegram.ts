@@ -1,4 +1,5 @@
 import { db } from './server';
+import { notificationText } from './notification-text';
 
 export async function telegram(method: string, body: Record<string, unknown>) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -25,7 +26,7 @@ export async function flushNotifications() {
   let success = true;
   for (const n of data || []) {
     try {
-      await send(n.chat_id, n.body, n.markup || undefined);
+      await send(n.chat_id, notificationText(n.body), n.markup || undefined);
       await db().from('abbey_notifications').update({ sent_at: new Date().toISOString(), locked_until: null }).eq('id', n.id);
     } catch {
       success = false;

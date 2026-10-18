@@ -52,6 +52,10 @@ test('booking and registry database integration', async t => {
       await assert.rejects(request(2,start,end),/slot booked/);
       await decide(second.id,'rejected');
       await decide(second.id,'rejected');
+      const decisions = (await query("select chat_id, body from abbey_notifications where body like 'Abbey booking confirmed%' or body like 'Abbey booking rejected%'")).rows;
+      assert.equal(decisions.length,2, 'retry must not queue a second decision message');
+      assert.ok(decisions.some(n => Number(n.chat_id) === 1 && n.body.startsWith('Abbey booking confirmed\n')));
+      assert.ok(decisions.some(n => Number(n.chat_id) === 2 && n.body.startsWith('Abbey booking rejected\n')));
       await assert.rejects(decide(second.id,'confirmed'),/already handled/);
     });
     await t.test('only owner/QM cancel; released and adjacent slots are bookable', async()=> {

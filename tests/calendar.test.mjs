@@ -1,6 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { monthDays, shiftMonth, singaporeDate } from '../src/lib/calendar.ts';
+import { halfHourTimes, sortBookings } from '../src/lib/calendar.ts';
+import { notificationText } from '../src/lib/notification-text.ts';
+test('half-hour selector covers the full day and calendar sorts actual instants',()=>{
+  assert.equal(halfHourTimes.length,48);
+  assert.deepEqual(halfHourTimes.slice(30,33).map(t=>t.label),['3pm','3.30pm','4pm']);
+  assert.equal(halfHourTimes.at(-1).value,'23:30');
+  const unsorted=[{resident_name:'Later',starts_at:'2026-10-19T08:00:00Z'},{resident_name:'Earlier',starts_at:'2026-10-19T15:30:00+08:00'}];
+  assert.deepEqual(sortBookings(unsorted).map(b=>b.resident_name),['Earlier','Later']);
+  assert.equal(unsorted[0].resident_name,'Later');
+});
+test('decision notifications clearly say approved or rejected and retain booking details',()=>{
+  assert.equal(notificationText('Abbey booking confirmed\n19 Oct 2026 15:00 SGT\nPractice'),'Your Abbey booking was approved.\n19 Oct 2026 15:00 SGT\nPractice');
+  assert.equal(notificationText('Abbey booking rejected\nDetails'),'Your Abbey booking was rejected.\nDetails');
+  assert.equal(notificationText('Abbey booking request\nDetails'),'Abbey booking request\nDetails');
+});
 import { parseSource, overlaps } from '../scripts/import-notion.mjs';
 test('Sunday-first calendar includes full weeks across year and leap-month boundaries',()=>{
   assert.equal(monthDays('2026-10-01')[0],'2026-09-27');

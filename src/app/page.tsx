@@ -2,14 +2,14 @@
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, Search, UserRound, X } from 'lucide-react';
-import { clock, dateLabel, monthDays, shiftDay, shiftMonth, singaporeDate, today } from '@/lib/calendar';
+import { clock, halfHourTimes, sortBookings, dateLabel, monthDays, shiftDay, shiftMonth, singaporeDate, today } from '@/lib/calendar';
 
 type Booking = { id: string; starts_at: string; ends_at: string; status: string; mine: boolean; resident_name: string; purpose: string };
 type Session = { name: string; admin: boolean; userId: number };
 type BookingForm = { date: string; time: string; duration: number; name: string; purpose: string; requestId: string };
 declare global { interface Window { Telegram?: { WebApp: { initData: string; ready: () => void; expand: () => void } } } }
 function samples(month: string): Booking[] {
-  return ['Kevin','Sonia','Rachel','Jonathan','Kit Yee','Daniella','Tempo'].flatMap((name, i) => [1, 2, 3].map(n => ({ id: `sample-${i}-${n}`, starts_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '13' : n === 2 ? '17' : '20'}:00:00+08:00`, ends_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '15' : n === 2 ? '19' : '22'}:00:00+08:00`, resident_name: name, purpose: 'Band practice', status: 'confirmed', mine: i === 0 })));
+  return ['Kevin Tan','Sonia','Rachel','Jonathan','Supperific Kit Yee','Daniella','Tempo'].flatMap((name, i) => [1, 2, 3].map(n => ({ id: `sample-${i}-${n}`, starts_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '13' : n === 2 ? '17' : '20'}:00:00+08:00`, ends_at: `${shiftDay(`${month.slice(0,7)}-01`, i * 3 + n)}T${n === 1 ? '15' : n === 2 ? '19' : '22'}:00:00+08:00`, resident_name: name, purpose: 'Band practice', status: 'confirmed', mine: i === 0 })));
 }
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -59,11 +59,11 @@ export default function Home() {
   useEffect(() => {
     if (!form && !selected) return;
     const previous = document.activeElement as HTMLElement | null;
-    dialog.current?.querySelector<HTMLElement>('input,button')?.focus();
+    dialog.current?.querySelector<HTMLElement>('input,select,button')?.focus();
     function keydown(event: KeyboardEvent) {
       if (event.key === 'Escape' && !busy) { setForm(null); setSelected(null); setError(''); }
       if (event.key === 'Tab') {
-        const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input, textarea') || []);
+        const controls = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input, select, textarea') || []);
         const first = controls[0], last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -74,7 +74,7 @@ export default function Home() {
   }, [!!form, !!selected, busy]);
   function preview() { setDemo(true); setSession({ name: 'Alex', admin: true, userId: 1 }); setBookings(samples(month)); }
   function openForm(date = today()) {
-    const minutes = date === today() ? Math.ceil((Date.now() - Date.parse(`${date}T00:00:00+08:00`)) / 900000) * 15 : 18 * 60;
+    const minutes = date === today() ? Math.ceil((Date.now() - Date.parse(`${date}T00:00:00+08:00`)) / 1800000) * 30 : 18 * 60;
     setError(''); setNotice('');
     setForm({ date: minutes >= 1440 ? shiftDay(date,1) : date, time: `${String(Math.floor(minutes % 1440 / 60)).padStart(2,'0')}:${String(minutes % 60).padStart(2,'0')}`, duration: 120, name: session?.name || '', purpose: '', requestId: crypto.randomUUID() });
   }
@@ -104,7 +104,7 @@ export default function Home() {
       setSelected(null); setNotice('Booking cancelled.'); setRevision(v => v + 1);
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
-  const visible = [...bookings].sort((a,b) => Date.parse(a.starts_at) - Date.parse(b.starts_at)).filter(b => ['confirmed','pending'].includes(b.status) && (!mine || b.mine) && b.resident_name.toLowerCase().includes(search.toLowerCase()));
+  const visible = sortBookings(bookings).filter(b => ['confirmed','pending'].includes(b.status) && (!mine || b.mine) && b.resident_name.toLowerCase().includes(search.toLowerCase()));
   return <>
     <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" onReady={() => { void connect(); }} />
     <main className="shell" inert={!!form || !!selected}>
@@ -136,7 +136,7 @@ export default function Home() {
     </main>
     {(form || selected) && <div className="modal-backdrop"><section ref={dialog} className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
       <div className="modal-heading"><h2 id="dialog-title">{form ? 'New booking' : selected?.resident_name || 'Booking'}</h2><button className="icon" aria-label="Close" disabled={busy} onClick={() => { setForm(null); setSelected(null); setError(''); }}><X size={22}/></button></div>
-      {form && <form onSubmit={submit}><label>Name<input required maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label><div className="form-row"><label>Date<input type="date" min={today()} required value={form.date} onInput={e=>{ const date=e.currentTarget.value; setForm(current=>current ? {...current,date} : null); }}/></label><label>Start time (SGT)<input type="time" required value={form.time} onInput={e=>{ const time=e.currentTarget.value; setForm(current=>current ? {...current,time} : null); }}/></label></div><label>Duration (minutes)<input type="number" min={15} max={1440} step={15} required value={form.duration} onChange={e=>setForm({...form,duration:Number(e.target.value)})}/></label><label>Purpose<textarea required maxLength={400} value={form.purpose} onChange={e=>setForm({...form,purpose:e.target.value})}/></label><p className="hint">Confirmed after quartermaster approval. All times SGT.</p>{error && <p className="error" role="alert">{error}</p>}<button disabled={busy} className="primary full">{busy ? 'Sending…' : 'Request booking'}</button></form>}
+      {form && <form onSubmit={submit}><label>Name<input required maxLength={80} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label><div className="form-row"><label>Date<input type="date" min={today()} required value={form.date} onInput={e=>{ const date=e.currentTarget.value; setForm(current=>current ? {...current,date} : null); }}/></label><label>Start time (SGT)<select required value={form.time} onChange={e=>setForm({...form,time:e.target.value})}>{halfHourTimes.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></label></div><label>Duration (hours)<input type="number" min={0.5} max={24} step={0.5} required value={form.duration / 60} onChange={e=>setForm({...form,duration:Number(e.target.value) * 60})}/></label><label>Purpose<textarea required maxLength={400} value={form.purpose} onChange={e=>setForm({...form,purpose:e.target.value})}/></label><p className="hint">Confirmed after quartermaster approval. All times SGT.</p>{error && <p className="error" role="alert">{error}</p>}<button disabled={busy} className="primary full">{busy ? 'Sending…' : 'Request booking'}</button></form>}
       {selected && <><dl><dt>From</dt><dd>{dateLabel(selected.starts_at,{day:'numeric',month:'long',year:'numeric'})}, {clock(selected.starts_at)}</dd><dt>To</dt><dd>{dateLabel(selected.ends_at,{day:'numeric',month:'long',year:'numeric'})}, {clock(selected.ends_at)}</dd><dt>Status</dt><dd className="capitalize">{selected.status}</dd>{selected.purpose && <><dt>Purpose</dt><dd>{selected.purpose}</dd></>}</dl><p className="hint">Singapore time (SGT)</p>{error && <p className="error" role="alert">{error}</p>}{(selected.mine || session?.admin) && new Date(selected.starts_at).getTime() > Date.now() && <div className="cancel-row">{confirmCancel ? <><span>Cancel this booking?</span><button className="danger" disabled={busy} onClick={cancel}>Yes, cancel</button><button disabled={busy} onClick={() => setConfirmCancel(false)}>Keep</button></> : <button className="danger" onClick={() => setConfirmCancel(true)}>Cancel booking</button>}</div>}</>}
     </section></div>}
   </>;

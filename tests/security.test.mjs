@@ -33,6 +33,11 @@ test('calculates overnight end dates in Singapore time',()=> {
   assert.equal(value.starts_at,'2026-10-18T15:30:00.000Z');
   assert.equal(value.ends_at,'2026-10-18T17:30:00.000Z');
 });
+test('new requests use half-hour starts and durations, including 1.5 hours overnight',()=> {
+  for (const time of ['15:15','15:45','15:01']) assert.throws(()=>bookingInput({...input,time},now));
+  for (const duration of [15,45,75]) assert.throws(()=>bookingInput({...input,duration},now));
+  assert.equal(bookingInput({...input,duration:90},now).ends_at,'2026-10-18T17:00:00.000Z');
+});
 test('validates booking inputs and rejects impossible dates and past slots',()=> {
   for(const invalid of [{date:'2026-02-30'},{time:'25:00'},{duration:-1},{duration:0},{duration:1441},{duration:16},{name:''},{purpose:'x'.repeat(401)},{date:'2026-10-16'},{requestId:'invalid'},{date:'2028-01-01'}]) assert.throws(()=>bookingInput({...input,...invalid},now));
 });

@@ -34,10 +34,10 @@ export function bookingInput(input: Record<string, unknown>, now = Date.now()) {
   const time = String(input.time ?? '');
   const duration = Number(input.duration);
   if (!name || name.length > 80 || !purpose || purpose.length > 400) throw new AppError('Enter your name (up to 80 characters) and purpose (up to 400).');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new AppError('Choose a valid date and start time.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^(?:[01]\d|2[0-3]):(?:00|30)$/.test(time)) throw new AppError('Choose a valid date and a start time on the hour or half hour.');
   const start = new Date(`${date}T${time}:00+08:00`);
   if (!Number.isFinite(start.getTime()) || new Date(start.getTime() + 8 * 3600000).toISOString().slice(0, 10) !== date) throw new AppError('Choose a valid date.');
-  if (!Number.isInteger(duration) || duration < 15 || duration > 1440 || duration % 15 !== 0) throw new AppError('Use a duration of 15 minutes to 24 hours, in 15-minute steps.');
+  if (!Number.isInteger(duration) || duration < 30 || duration > 1440 || duration % 30 !== 0) throw new AppError('Use a duration of 0.5 to 24 hours, in half-hour steps.');
   if (start.getTime() <= now) throw new AppError('Choose a time in the future.');
   if (start.getTime() > now + 366 * 86400000) throw new AppError('Choose a date within the next year.');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(input.requestId))) throw new AppError('Invalid request. Refresh and try again.');

@@ -20,8 +20,14 @@ export async function POST(request: Request) {
         if (!match) throw new AppError('This button belongs to an older version. Use /pending.');
         const { data, error } = await db().rpc('abbey_decide', { p_id: match[2], p_status: match[1] === 'approve' ? 'confirmed' : 'rejected', p_actor: user.id, p_qm: process.env.TELEGRAM_QM_CHAT_ID });
         if (error) throw new AppError(error.code === '23P01' ? 'This overlaps an approved booking. Reject it or choose another slot.' : 'Cannot update: already handled, started, or the license was revoked.');
-        await telegram('answerCallbackQuery', { callback_query_id: callback.id, text: `Booking ${data.status}.` });
-        await telegram('editMessageText', { chat_id: user.id, message_id: callback.message.message_id, text: `Abbey booking ${data.status}\n\n${bookingSummary(data)}`, reply_markup: { inline_keyboard: [] } });
+        // Deliver the resident's decision even if the old approval card can no longer be edited.
+        const delivered = await flushNotifications();
+        await Promise.allSettled([
+          telegram('answerCallbackQuery', { callback_query_id: callback.id, text: `Booking ${data.status === 'confirmed' ? 'approved' : data.status}.` }),
+          telegram('editMessageText', { chat_id: user.id, message_id: callback.message.message_id, text: `Abbey booking ${data.status}\n\n${bookingSummary(data)}`, reply_markup: { inline_keyboard: [] } }),
+        ]);
+        // Telegram retries this update; the database decision is idempotent.
+        return Response.json(delivered ? { ok: true } : { error: 'Notification delivery delayed' }, { status: delivered ? 200 : 503 });
       } else {
         const [rawCommand] = String(message.text || '').trim().split(/\s+/);
         const command = rawCommand?.split('@')[0];
