@@ -1,6 +1,9 @@
 const singaporeDayFormatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore', year: 'numeric', month: '2-digit', day: '2-digit' });
 const timeFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Singapore', hour: 'numeric', minute: '2-digit' });
 export const today = () => singaporeDayFormatter.format(new Date());
+export function conflictingBooking<T extends { starts_at: string; ends_at: string; status: string }>(bookings: T[], start: string, end: string): T | undefined {
+  return bookings.find(b => ['confirmed', 'pending'].includes(b.status) && Date.parse(b.starts_at) < Date.parse(end) && Date.parse(b.ends_at) > Date.parse(start));
+}
 export const halfHourTimes = Array.from({ length: 48 }, (_, i) => {
   const hour = Math.floor(i / 2);
   return { value: `${String(hour).padStart(2,'0')}:${i % 2 ? '30' : '00'}`, label: `${hour % 12 || 12}${i % 2 ? '.30' : ''}${hour < 12 ? 'am' : 'pm'}` };

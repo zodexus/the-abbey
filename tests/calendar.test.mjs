@@ -1,8 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { monthDays, shiftMonth, singaporeDate } from '../src/lib/calendar.ts';
-import { bookingsByDay, calendarRangeLabel, fortnightDays, halfHourTimes, slotLabel, sortBookings } from '../src/lib/calendar.ts';
+import { bookingsByDay, calendarRangeLabel, conflictingBooking, fortnightDays, halfHourTimes, slotLabel, sortBookings } from '../src/lib/calendar.ts';
 import { notificationText } from '../src/lib/notification-text.ts';
+test('booking form detects partial, contained and overnight clashes, including pending requests', () => {
+  const existing = { starts_at: '2026-10-23T23:00:00+08:00', ends_at: '2026-10-24T01:00:00+08:00', status: 'confirmed' };
+  for (const status of ['confirmed', 'pending']) {
+    const booking = { ...existing, status };
+    for (const [start, end] of [
+      ['2026-10-23T22:00:00+08:00', '2026-10-23T23:30:00+08:00'],
+      ['2026-10-24T00:00:00+08:00', '2026-10-24T02:00:00+08:00'],
+      ['2026-10-23T23:30:00+08:00', '2026-10-24T00:30:00+08:00'],
+      ['2026-10-23T22:00:00+08:00', '2026-10-24T02:00:00+08:00'],
+      [existing.starts_at, existing.ends_at],
+    ]) assert.equal(conflictingBooking([booking], start, end), booking);
+  }
+  assert.equal(conflictingBooking([existing], '2026-10-23T22:00:00+08:00', existing.starts_at), undefined);
+  assert.equal(conflictingBooking([existing], existing.ends_at, '2026-10-24T02:00:00+08:00'), undefined);
+  for (const status of ['cancelled', 'rejected']) assert.equal(conflictingBooking([{ ...existing, status }], existing.starts_at, existing.ends_at), undefined);
+});
 test('half-hour selector covers the full day and calendar sorts actual instants',()=>{
   assert.equal(halfHourTimes.length,48);
   assert.deepEqual(halfHourTimes.slice(30,33).map(t=>t.label),['3pm','3.30pm','4pm']);

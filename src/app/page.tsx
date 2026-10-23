@@ -2,12 +2,53 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Script from 'next/script';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, Search, UserRound, X } from 'lucide-react';
-import { bookingsByDay, clock, halfHourTimes, sortBookings, dateLabel, calendarRangeLabel, fortnightDays, shiftDay, singaporeDate, slotLabel, today } from '@/lib/calendar';
+import { bookingsByDay, clock, conflictingBooking, halfHourTimes, sortBookings, dateLabel, calendarRangeLabel, fortnightDays, shiftDay, singaporeDate, slotLabel, today } from '@/lib/calendar';
 
 type Booking = { id: string; starts_at: string; ends_at: string; status: string; mine: boolean; resident_name: string; purpose: string };
 type Session = { name: string; admin: boolean; userId: number };
 type BookingForm = { date: string; time: string; duration: number; name: string; purpose: string; requestId: string };
 declare global { interface Window { Telegram?: { WebApp: { initData: string; ready: () => void; expand: () => void } } } }
+function BookingRequestForm({ initial, busy, error, loadBookings, onSubmit }: {
+  initial: BookingForm; busy: boolean; error: string;
+  loadBookings: (date: string) => Promise<Booking[]>;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+}) {
+  const [slot, setSlot] = useState({ date: initial.date, time: initial.time, duration: initial.duration });
+  const [availability, setAvailability] = useState<{ date: string; bookings: Booking[]; error: string } | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let live = true;
+    setAvailability(null);
+    if (slot.date) loadBookings(slot.date)
+      .then(bookings => { if (live) setAvailability({ date: slot.date, bookings, error: '' }); })
+      .catch(e => { if (live) setAvailability({ date: slot.date, bookings: [], error: e.message }); });
+    return () => { live = false; };
+  }, [slot.date, loadBookings, attempt]);
+  const start = Date.parse(`${slot.date}T${slot.time}:00+08:00`);
+  const valid = Number.isFinite(start) && slot.duration >= 30 && slot.duration <= 1440 && slot.duration % 30 === 0;
+  const ready = availability?.date === slot.date && !availability.error;
+  const conflict = valid && ready ? conflictingBooking(availability.bookings, new Date(start).toISOString(), new Date(start + slot.duration * 60000).toISOString()) : undefined;
+  const blocked = busy || !valid || !ready || Boolean(conflict);
+  function updateSlot(event: React.FormEvent<HTMLFormElement>) {
+    const field = event.target;
+    // Text inputs stay native: editing Name/Purpose never rerenders the form or calendar.
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement) || !['date', 'time', 'duration'].includes(field.name)) return;
+    const fields = new FormData(event.currentTarget);
+    setSlot({ date: String(fields.get('date') || ''), time: String(fields.get('time') || ''), duration: Number(fields.get('duration')) * 60 });
+  }
+  return <form onChange={updateSlot} onSubmit={event => { if (blocked) event.preventDefault(); else void onSubmit(event); }}>
+    <label>Name<input required maxLength={80} name="name" defaultValue={initial.name}/></label>
+    <div className="form-row"><label>Date<input type="date" min={today()} required name="date" defaultValue={initial.date}/></label><label>Start time (SGT)<select required name="time" defaultValue={initial.time}>{halfHourTimes.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></label></div>
+    <label>Duration (hours)<input type="number" min={0.5} max={24} step={0.5} required name="duration" defaultValue={initial.duration / 60} inputMode="decimal"/></label>
+    <label>Purpose<textarea required maxLength={400} name="purpose" defaultValue={initial.purpose}/></label>
+    <p className="hint">Confirmed after quartermaster approval. All times SGT.</p>
+    {!availability && <p className="hint" role="status">Checking availability…</p>}
+    {availability?.error && <p className="error" role="alert">Could not check availability. <button type="button" onClick={() => setAttempt(v => v + 1)}>Retry</button></p>}
+    {conflict && <p className="error" role="alert">This overlaps {conflict.status === 'pending' ? 'a pending request' : 'an existing booking'}: {slotLabel(conflict.starts_at, conflict.ends_at)}. Choose another time.</p>}
+    {error && <p className="error" role="alert">{error}</p>}
+    <button disabled={blocked} className="primary full">{busy ? 'Sending…' : 'Request booking'}</button>
+  </form>;
+}
 function samples(firstDay: string): Booking[] {
   return ['Kevin Tan','Sonia','Rachel','Jonathan','Supperific Kit Yee','Daniella','Tempo'].flatMap((name, i) => [1, 2].map(n => ({ id: `sample-${i}-${n}`, starts_at: `${shiftDay(firstDay, i * 2 + n - 1)}T${n === 1 ? '13' : n === 2 ? '17' : '20'}:00:00+08:00`, ends_at: `${shiftDay(firstDay, i * 2 + n - 1)}T${n === 1 ? '15' : n === 2 ? '19' : '22'}:00:00+08:00`, resident_name: name, purpose: 'Band practice', status: 'confirmed', mine: i === 0 })));
 }
@@ -91,12 +132,16 @@ export default function Home() {
   const busyRef = useRef(busy);
   busyRef.current = busy;
   const modalOpen = Boolean(form || selected);
-  async function api(path: string, method = 'GET', body?: unknown) {
+  const api = useCallback(async (path: string, method = 'GET', body?: unknown) => {
     const response = await fetch(path, { method, headers: { 'Content-Type': 'application/json', 'x-telegram-init-data': window.Telegram?.WebApp.initData || '' }, ...(body ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Could not connect. Please try again.');
     return result;
-  }
+  }, []);
+  const loadAvailability = useCallback(async (date: string): Promise<Booking[]> => {
+    if (demo) return bookings;
+    return (await api(`/api/bookings?date=${date}`)).bookings;
+  }, [demo, bookings, api]);
   async function connect() {
     const app = window.Telegram?.WebApp;
     if (!app?.initData) return;
@@ -154,7 +199,7 @@ export default function Home() {
       const start = new Date(`${submitted.date}T${submitted.time}:00+08:00`), end = new Date(start.getTime() + submitted.duration * 60000);
       if (start.getTime() <= Date.now()) throw new Error('Choose a time in the future.');
       if (demo) {
-        if (bookings.some(b => b.status === 'confirmed' && new Date(b.starts_at) < end && new Date(b.ends_at) > start)) throw new Error('That slot is booked. Choose another time.');
+        if (conflictingBooking(bookings, start.toISOString(), end.toISOString())) throw new Error('This time overlaps an existing booking or pending request. Choose another time.');
         setBookings(b => [...b, { id: crypto.randomUUID(), starts_at: start.toISOString(), ends_at: end.toISOString(), status: 'pending', mine: true, resident_name: submitted.name, purpose: submitted.purpose }]);
         setNotice(`Pending approval: ${slotLabel(start.toISOString(), end.toISOString())}. Tap your pending booking to cancel.`);
       } else {
@@ -195,7 +240,7 @@ export default function Home() {
     </main>
     {(form || selected) && <div className="modal-backdrop"><section ref={dialog} className="modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
       <div className="modal-heading"><h2 id="dialog-title">{form ? 'New booking' : selected?.resident_name || 'Booking'}</h2><button className="icon" aria-label="Close" disabled={busy} onClick={() => { setForm(null); setSelected(null); setError(''); }}><X size={22}/></button></div>
-      {form && <form onSubmit={submit}><label>Name<input required maxLength={80} name="name" defaultValue={form.name}/></label><div className="form-row"><label>Date<input type="date" min={today()} required name="date" defaultValue={form.date}/></label><label>Start time (SGT)<select required name="time" defaultValue={form.time}>{halfHourTimes.map(t=><option key={t.value} value={t.value}>{t.label}</option>)}</select></label></div><label>Duration (hours)<input type="number" min={0.5} max={24} step={0.5} required name="duration" defaultValue={form.duration / 60} inputMode="decimal"/></label><label>Purpose<textarea required maxLength={400} name="purpose" defaultValue={form.purpose}/></label><p className="hint">Confirmed after quartermaster approval. All times SGT.</p>{error && <p className="error" role="alert">{error}</p>}<button disabled={busy} className="primary full">{busy ? 'Sending…' : 'Request booking'}</button></form>}
+      {form && <BookingRequestForm key={form.requestId} initial={form} busy={busy} error={error} loadBookings={loadAvailability} onSubmit={submit}/>}
       {selected && <><dl><dt>From</dt><dd>{dateLabel(selected.starts_at,{day:'numeric',month:'long',year:'numeric'})}, {clock(selected.starts_at)}</dd><dt>To</dt><dd>{dateLabel(selected.ends_at,{day:'numeric',month:'long',year:'numeric'})}, {clock(selected.ends_at)}</dd><dt>Status</dt><dd className="capitalize">{selected.status}</dd>{selected.purpose && <><dt>Purpose</dt><dd>{selected.purpose}</dd></>}</dl><p className="hint">Singapore time (SGT)</p>{error && <p className="error" role="alert">{error}</p>}{(selected.mine || session?.admin) && new Date(selected.starts_at).getTime() > Date.now() && <div className="cancel-row">{confirmCancel ? <><span>Cancel this booking?</span><button className="danger" disabled={busy} onClick={cancel}>Yes, cancel</button><button disabled={busy} onClick={() => setConfirmCancel(false)}>Keep</button></> : <button className="danger" onClick={() => setConfirmCancel(true)}>Cancel booking</button>}</div>}</>}
     </section></div>}
   </>;

@@ -32,6 +32,13 @@ export async function POST(request: Request) {
     const input = bookingInput(await request.json());
     const qm = process.env.TELEGRAM_QM_CHAT_ID;
     if (!qm) throw new AppError('Quartermaster approval is not configured yet.', 503);
+    const { data: conflicts, error: conflictError } = await db().from('abbey_bookings').select('id,telegram_user_id,request_id')
+      .in('status', ['confirmed', 'pending']).lt('starts_at', input.ends_at).gt('ends_at', input.starts_at);
+    if (conflictError) dbError(conflictError);
+    // A retried request must still return its original booking without duplicating notifications.
+    if (conflicts?.some(b => b.telegram_user_id !== user.id || b.request_id !== input.request_id)) {
+      throw new AppError('This time overlaps an existing booking or pending request. Choose another time.', 409);
+    }
     const { data, error } = await db().rpc('abbey_request', { p_user_id: user.id, p_request_id: input.request_id, p_name: input.resident_name, p_purpose: input.purpose, p_start: input.starts_at, p_end: input.ends_at, p_qm: qm });
     if (error) dbError(error);
     const notified = await flushNotifications();
