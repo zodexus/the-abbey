@@ -58,9 +58,18 @@ test('booking and registry database integration', async t => {
       assert.ok(decisions.some(n => Number(n.chat_id) === 2 && n.body.startsWith('Abbey booking rejected\n')));
       await assert.rejects(decide(second.id,'confirmed'),/already handled/);
     });
-    await t.test('only owner/QM cancel; released and adjacent slots are bookable', async()=> {
+    await t.test('only QM cancels confirmed bookings; owners can withdraw pending requests', async()=> {
       await assert.rejects(decide(bookingId,'cancelled',2),/not allowed/);
-      await decide(bookingId,'cancelled',1);
+      const before = (await query('select count(*)::int as count from abbey_notifications')).rows[0].count;
+      await assert.rejects(decide(bookingId,'cancelled',1),/not allowed/);
+      assert.equal((await query('select status from abbey_bookings where id=$1',[bookingId])).rows[0].status,'confirmed');
+      assert.equal((await query('select count(*)::int as count from abbey_notifications')).rows[0].count,before);
+      await decide(bookingId,'cancelled',999);
+      const pending = (await request(1,new Date(Date.parse(end)+14400000).toISOString(),new Date(Date.parse(end)+18000000).toISOString())).rows[0];
+      await assert.rejects(decide(pending.id,'cancelled',2),/not allowed/);
+      await decide(pending.id,'cancelled',1);
+      await decide(pending.id,'cancelled',1);
+      await assert.rejects(decide(pending.id,'confirmed'),/already handled/);
       const next = (await request(2,start,end)).rows[0];
       await assert.rejects(decide(next.id,'confirmed',2),/not allowed/);
       await decide(next.id,'confirmed');

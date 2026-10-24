@@ -57,6 +57,7 @@ export async function PATCH(request: Request) {
       if (data?.length) return Response.json({ ok: true });
     }
     const { error } = await db().rpc('abbey_decide', { p_id: id, p_status: 'cancelled', p_actor: user.id, p_qm: process.env.TELEGRAM_QM_CHAT_ID });
+    if (error?.message?.includes('not allowed')) throw new AppError('Only the quartermaster can cancel confirmed bookings. You can withdraw your own pending requests.', 403);
     if (error) throw new AppError('Unable to cancel. It may already be handled or have started.', 409);
     await flushNotifications();
     return Response.json({ ok: true });

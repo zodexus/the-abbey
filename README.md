@@ -1,6 +1,6 @@
 # The Abbey
 
-A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and cancel their own bookings. The quartermaster approves or rejects in **@TheAbbeyBot**. Members of **Abbey Licensed ’26/27** can access the calendar automatically when group access is configured.
+A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and withdraw their own pending requests. The quartermaster approves or rejects in **@TheAbbeyBot**. Members of **Abbey Licensed ’26/27** can access the calendar automatically when group access is configured.
 
 ## Local preview
 
@@ -70,7 +70,7 @@ Licensed residents can see booking names, start/end times, and purposes on the c
 - Pending requests do not hold slots. PostgreSQL prevents overlapping confirmed bookings, including concurrent approvals. Back-to-back sessions are allowed.
 - Request IDs prevent duplicates on retry. Repeat decisions are harmless.
 - Technical bounds: Half-hour start times and duration increments, shown in hours, up to 24 hours, requests within the next year, maximum 10 upcoming pending requests per resident. No college opening-hours policy, two-hour quota, annual license expiry or recurring allocations are assumed.
-- Owners can cancel before start. Approval checks the license is still active.
+- Residents can withdraw their own pending requests before start. Only the QM can cancel confirmed bookings before start. Approval checks the license is still active.
 - Notifications are queued transactionally. Bot interactions retry a batch; `/pending` retrieves the next 10 requests, `/sync` retries queued notifications. No scheduled retry worker is included; after an outage use `/sync` until drained. Delivery is at-least-once, so a crash after sending can cause a duplicate notification, but never a duplicate reservation.
 - Calendar refreshes every minute and manually. Server checks run on submission and approval. Signed sessions expire after an hour; close and reopen the Mini App.
 
