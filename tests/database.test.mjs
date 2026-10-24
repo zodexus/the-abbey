@@ -15,6 +15,10 @@ test('booking and registry database integration', async t => {
     const migration = readFileSync(new URL('../scripts/abbey.sql', import.meta.url), 'utf8');
     await pg.exec(migration);
     await pg.exec(migration);
+    await pg.exec(readFileSync(new URL('../scripts/qm-only-confirmed-cancellation.sql', import.meta.url), 'utf8'));
+    const ownerUpgrade = readFileSync(new URL('../scripts/owner-booking-cancellation.sql', import.meta.url), 'utf8');
+    await pg.exec(ownerUpgrade);
+    await pg.exec(ownerUpgrade);
     const query = (sql, values=[]) => pg.query(sql,values);
     const claim = (id, handle) => query('select * from abbey_claim_license($1,$2)',[id,handle]);
     const request = (user,start,end,requestId=randomUUID()) => query('select * from abbey_request($1,$2,$3,$4,$5,$6,$7)',[user,requestId,'Resident','Rehearsal',start,end,999]);
@@ -58,12 +62,13 @@ test('booking and registry database integration', async t => {
       assert.ok(decisions.some(n => Number(n.chat_id) === 2 && n.body.startsWith('Abbey booking rejected\n')));
       await assert.rejects(decide(second.id,'confirmed'),/already handled/);
     });
-    await t.test('only QM cancels confirmed bookings; owners can withdraw pending requests', async()=> {
+    await t.test('owners cancel their own future bookings and QM can cancel anyone’s', async()=> {
       await assert.rejects(decide(bookingId,'cancelled',2),/not allowed/);
       const before = (await query('select count(*)::int as count from abbey_notifications')).rows[0].count;
-      await assert.rejects(decide(bookingId,'cancelled',1),/not allowed/);
-      assert.equal((await query('select status from abbey_bookings where id=$1',[bookingId])).rows[0].status,'confirmed');
-      assert.equal((await query('select count(*)::int as count from abbey_notifications')).rows[0].count,before);
+      await decide(bookingId,'cancelled',1);
+      await decide(bookingId,'cancelled',1);
+      assert.equal((await query('select status from abbey_bookings where id=$1',[bookingId])).rows[0].status,'cancelled');
+      assert.equal((await query('select count(*)::int as count from abbey_notifications')).rows[0].count,before+2);
       await decide(bookingId,'cancelled',999);
       const pending = (await request(1,new Date(Date.parse(end)+14400000).toISOString(),new Date(Date.parse(end)+18000000).toISOString())).rows[0];
       await assert.rejects(decide(pending.id,'cancelled',2),/not allowed/);
@@ -75,6 +80,10 @@ test('booking and registry database integration', async t => {
       await decide(next.id,'confirmed');
       const adjacent = (await request(1,end,new Date(Date.parse(end)+3600000).toISOString())).rows[0];
       await decide(adjacent.id,'confirmed');
+      await decide(adjacent.id,'cancelled',999);
+      assert.equal((await query('select status from abbey_bookings where id=$1',[adjacent.id])).rows[0].status,'cancelled');
+      await query("update abbey_bookings set starts_at=now()-interval '1 hour', ends_at=now()+interval '1 hour' where id=$1",[next.id]);
+      await assert.rejects(decide(next.id,'cancelled',2),/booking has started/);
     });
     await t.test('revocation survives username changes and migration reruns', async()=> {
       await query("update abbey_licenses set active=false where telegram_user_id=1");

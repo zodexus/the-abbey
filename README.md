@@ -1,6 +1,6 @@
 # The Abbey
 
-A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and withdraw their own pending requests. The quartermaster approves or rejects in **@TheAbbeyBot**. Members of **Abbey Licensed ’26/27** can access the calendar automatically when group access is configured.
+A Telegram Mini App for Tembusu College’s bandroom. Residents browse a dark monthly calendar, request a session, and cancel their own bookings. The quartermaster approves or rejects in **@TheAbbeyBot**. Members of **Abbey Licensed ’26/27** can access the calendar automatically when group access is configured.
 
 ## Local preview
 

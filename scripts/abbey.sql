@@ -104,7 +104,7 @@ declare b abbey_bookings; begin
   select * into b from abbey_bookings where id = p_id for update;
   if not found then raise exception 'not found'; end if;
   if p_status not in ('confirmed','rejected','cancelled') then raise exception 'invalid status'; end if;
-  if p_actor <> p_qm and (p_status <> 'cancelled' or p_actor <> b.telegram_user_id or b.status not in ('pending','cancelled')) then raise exception 'not allowed'; end if;
+  if p_actor <> p_qm and (p_status <> 'cancelled' or p_actor <> b.telegram_user_id) then raise exception 'not allowed'; end if;
   if b.status = p_status then return b; end if;
   if (p_status in ('confirmed','rejected') and b.status <> 'pending') or
      (p_status = 'cancelled' and b.status not in ('pending','confirmed')) then raise exception 'already handled'; end if;
