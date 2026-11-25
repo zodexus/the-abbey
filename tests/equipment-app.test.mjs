@@ -16,6 +16,7 @@ test('inventory app enforces owner/tech/member roles, dated reservations and phy
   await pg.exec(readFileSync(new URL('../scripts/inventory.sql',import.meta.url),'utf8'));
   await pg.exec(schema);await pg.exec(schema);
   await q("insert into abbey_licenses(handle,name,telegram_user_id) values ('borrower_a','A',101),('borrower_b','B',102),('nickel_tang','Tech',201)");
+  await pg.exec('set role service_role');
   await t.test('named tech role binds once to signed user ID and survives username changes',async()=>{
    assert.equal(await rpc('abbey_claim_tech_admin',[201,'nickel_tang']),true);
    assert.equal(await rpc('abbey_claim_tech_admin',[202,'nickel_tang']),false);
