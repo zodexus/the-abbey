@@ -85,3 +85,11 @@ pnpm build
 Tests cover signed identity, invalid sessions, overnight bookings, migration reruns, database permissions, handle binding, revocation, duplicate requests, overlap prevention, cancellation authorization, and notification leases. PostgreSQL integration tests use PGlite locally; no Supabase data or Telegram messages are touched.
 
 Stack: Next.js, Supabase PostgreSQL, Telegram Bot API. Equipment loans, door dispatch, checkout photos and separate admin logins have been removed.
+
+## Scheduled booking reminders
+
+Apply `scripts/booking-reminders.sql`, deploy the app, then apply `scripts/booking-reminders-cron.sql` in the existing Supabase SQL editor. The named Supabase Cron job runs every minute through pg_net and `/api/reminders`; no Vercel Cron plan or new environment variables are needed. The scheduler authenticates with hashed, one-use, two-minute tickets in a private schema. API roles cannot mint tickets or invoke the dispatcher.
+
+Only confirmed bookings linked to a positive Telegram user ID are included. Advance reminders are due 12 hours before start, moved to 08:00 SGT on the same date if the calculated time is between 00:00 and 07:59. Late approvals send on the next run, except during those quiet hours; advance reminders expire at session start. Reset checklists are due at session end, including overnight, and expire after 24 hours to avoid stale messages after an extended outage. Existing upcoming/in-progress approved bookings are included; completed historical bookings are excluded.
+
+Cancellation invalidates unsent messages. Schedule changes recalculate unsent messages; already sent reminders are never deliberately requeued. Unique booking/type rows, two-minute leases, lease IDs and a fresh booking check prevent normal duplicate and stale sends. Failed deliveries use increasing delays up to one hour. Telegram delivery is at-least-once: a network timeout after Telegram accepts a message, or failure to save its receipt, can still cause a duplicate on retry. Inspect `abbey_booking_reminders` and `cron.job_run_details` for delivery state; pg_net HTTP responses show the worker result.
