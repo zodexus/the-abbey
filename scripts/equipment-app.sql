@@ -92,13 +92,13 @@ begin
   insert into public.abbey_notifications(chat_id,body,source_key,markup)
     select recipient,'Abbey equipment loan request'||chr(10)||p_name||chr(10)||
       to_char(p_start at time zone 'Asia/Singapore','DD Mon YYYY HH24:MI')||' → '||to_char(p_end at time zone 'Asia/Singapore','DD Mon YYYY HH24:MI')||' SGT'||chr(10)||left(summary,1200)||chr(10)||left(p_purpose,300)||chr(10)||'Open Equipment → Loans in the mini app. Only the quartermaster can approve.',
-      'loan:'||result||':request:'||recipient, jsonb_build_object('inline_keyboard',jsonb_build_array(jsonb_build_array(jsonb_build_object('text','View equipment loans','web_app',jsonb_build_object('url','https://the-abbey.vercel.app/?view=equipment')))))
+      'loan:'||result||':request:'||recipient, jsonb_build_object('inline_keyboard',jsonb_build_array(jsonb_build_array(jsonb_build_object('text','View equipment loans','web_app',jsonb_build_object('url','https://the-abbey.vercel.app/equipment')))))
     from (select p_qm recipient union select telegram_user_id from public.abbey_tech_admins where active and telegram_user_id is not null) recipients
     on conflict(source_key) do nothing;
   insert into public.abbey_notifications(chat_id,body,source_key,markup) values(p_actor,
     'Your Abbey equipment loan request is pending quartermaster approval.'||chr(10)||
       to_char(p_start at time zone 'Asia/Singapore','DD Mon YYYY HH24:MI')||' → '||to_char(p_end at time zone 'Asia/Singapore','DD Mon YYYY HH24:MI')||' SGT'||chr(10)||left(summary,1200)||chr(10)||'Equipment is reserved only after approval. View or cancel your request in Equipment → Loans.',
-    'loan:'||result||':receipt',jsonb_build_object('inline_keyboard',jsonb_build_array(jsonb_build_array(jsonb_build_object('text','View my equipment loan','web_app',jsonb_build_object('url','https://the-abbey.vercel.app/?view=equipment'))))))
+    'loan:'||result||':receipt',jsonb_build_object('inline_keyboard',jsonb_build_array(jsonb_build_array(jsonb_build_object('text','View my equipment loan','web_app',jsonb_build_object('url','https://the-abbey.vercel.app/equipment'))))))
     on conflict(source_key) do nothing;
   return result;
 end $$;

@@ -15,6 +15,15 @@ export function calendarButton() {
   if (!url?.startsWith('https://')) return undefined;
   return { inline_keyboard: [[{ text: 'Calendar', web_app: { url } }]] };
 }
+export function equipmentButton() {
+  const url=process.env.NEXT_PUBLIC_APP_URL;
+  if(!url?.startsWith('https://')) return undefined;
+  return {inline_keyboard:[[{text:'Equipment loans',web_app:{url:`${url.replace(/\/$/,'')}/equipment`}}]]};
+}
+export function appButtons() {
+  const calendar=calendarButton(),equipment=equipmentButton();
+  return calendar&&equipment?{inline_keyboard:[...calendar.inline_keyboard,...equipment.inline_keyboard]}:undefined;
+}
 export function bookingSummary(b: { resident_name: string; purpose: string; starts_at: string; ends_at: string }) {
   const format = (date: string) => new Date(date).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
   return `${b.resident_name}\n${format(b.starts_at)} → ${format(b.ends_at)} (SGT)\n${b.purpose}`;

@@ -1,6 +1,6 @@
 import { db, isAdmin, licensed } from '@/lib/server';
 import { AppError, validWebhookSecret, type TelegramUser } from '@/lib/security';
-import { bookingSummary, calendarButton, flushNotifications, send, telegram } from '@/lib/telegram';
+import { appButtons, bookingSummary, calendarButton, equipmentButton, flushNotifications, send, telegram } from '@/lib/telegram';
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
   if (!validWebhookSecret(request.headers.get('x-telegram-bot-api-secret-token'), process.env.TELEGRAM_WEBHOOK_SECRET || '')) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -44,8 +44,12 @@ export async function POST(request: Request) {
         } else if (isAdmin(user) && command === '/sync') {
           const ok = await flushNotifications();
           await send(user.id, ok ? 'Notification retry batch completed.' : 'Some notifications could not be sent. Try /sync again later.');
+        } else if (command === '/equipment' || command === '/loans') {
+          await send(user.id, 'Abbey equipment loans\n\nBrowse equipment, request a loan and check your existing requests below.', equipmentButton());
+        } else if (command === '/calendar') {
+          await send(user.id, 'Abbey booking calendar', calendarButton());
         } else {
-          await send(user.id, `The Abbey 🎶\n\nCheck availability and request a booking below.${isAdmin(user) ? '\n\n/pending — review requests\n/sync — retry notifications' : ''}`, calendarButton());
+          await send(user.id, `The Abbey 🎶\n\nOpen the calendar to book the Abbey, or use the separate equipment loan page.\n\n/calendar — room bookings\n/equipment — equipment loans${isAdmin(user) ? '\n\n/pending — review requests\n/sync — retry notifications' : ''}`, appButtons());
         }
       }
     } catch (error) {

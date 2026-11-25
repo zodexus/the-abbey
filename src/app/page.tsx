@@ -1,13 +1,11 @@
 'use client';
 import { memo, useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Script from 'next/script';
-import EquipmentApp from './equipment';
-import type { EquipmentRole } from '@/lib/equipment';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw, Search, UserRound, X } from 'lucide-react';
 import { bookingsByDay, clock, conflictingBooking, halfHourTimes, sortBookings, dateLabel, calendarRangeLabel, fortnightDays, shiftDay, singaporeDate, slotLabel, today } from '@/lib/calendar';
 
 type Booking = { id: string; starts_at: string; ends_at: string; status: string; mine: boolean; resident_name: string; purpose: string };
-type Session = { name: string; admin: boolean; userId: number; equipmentRole?: EquipmentRole };
+type Session = { name: string; admin: boolean; userId: number };
 type BookingForm = { date: string; time: string; duration: number; name: string; purpose: string; requestId: string };
 declare global { interface Window { Telegram?: { WebApp: { initData: string; ready: () => void; expand: () => void } } } }
 function BookingRequestForm({ initial, busy, error, loadBookings, onSubmit }: {
@@ -116,8 +114,6 @@ const FortnightCalendar = memo(function FortnightCalendar({ firstDay, bookings, 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [demo, setDemo] = useState(false);
-  const [view, setView] = useState<'calendar'|'equipment'>('calendar');
-  useEffect(() => { if(new URLSearchParams(window.location.search).get('view')==='equipment') setView('equipment'); }, []);
   const [authError, setAuthError] = useState('');
   const [firstDay, setFirstDay] = useState(today);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -185,7 +181,7 @@ export default function Home() {
     document.addEventListener('keydown', keydown);
     return () => { document.removeEventListener('keydown', keydown); document.body.style.overflow = previousOverflow; previous?.focus({ preventScroll: true }); };
   }, [modalOpen]);
-  function preview() { setDemo(true); setSession({ name: 'Alex', admin: true, userId: 1, equipmentRole: 'owner' }); setBookings(samples(firstDay)); }
+  function preview() { setDemo(true); setSession({ name: 'Alex', admin: true, userId: 1 }); setBookings(samples(firstDay)); }
   const openForm = useCallback((date = today()) => {
     const minutes = date === today() ? Math.ceil((Date.now() - Date.parse(`${date}T00:00:00+08:00`)) / 1800000) * 30 : 18 * 60;
     setError(''); setNotice('');
@@ -226,14 +222,13 @@ export default function Home() {
   return <>
     <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" onReady={() => { void connect(); }} />
     <main className="shell" inert={!!form || !!selected}>
-      <header className="header"><h1><span aria-hidden="true">🎶</span> abbey bookings 26/27</h1>{session && view==='calendar' && <div className="toolbar">
+      <header className="header"><h1><span aria-hidden="true">🎶</span> abbey bookings 26/27</h1>{session && <div className="toolbar">
         <button className={mine ? 'icon active' : 'icon'} title="My bookings" aria-label="My bookings" aria-pressed={mine} onClick={() => setMine(!mine)}><UserRound size={21}/></button>
         <button className="icon" title="Search" aria-label="Search bookings" aria-expanded={searching} onClick={() => { setSearching(!searching); setSearch(''); }}><Search size={21}/></button>
         <button className="icon" title="Refresh" aria-label="Refresh calendar" disabled={loading} onClick={() => setRevision(v => v + 1)}><RefreshCw size={19} className={loading ? 'spin' : ''}/></button>
         <button className="primary" onClick={() => openForm()}>New <Plus size={19}/></button>
       </div>}</header>
-      {session && <nav className="app-navigation" aria-label="Mini app sections"><button aria-pressed={view==='calendar'} onClick={()=>setView('calendar')}>Calendar</button><button aria-pressed={view==='equipment'} onClick={()=>setView('equipment')}>Equipment &amp; loans</button></nav>}
-      {!session ? <section className="welcome"><a className="primary" href="https://t.me/TheAbbeyBot">Open in Telegram</a><p>Abbey-licensed residents only.</p>{authError && <p className="error" role="alert">{authError}</p>}<button className="subtle" onClick={preview}>Preview</button></section> : view==='equipment' ? <EquipmentApp session={session} api={api} demo={demo}/> : <>
+      {!session ? <section className="welcome"><a className="primary" href="https://t.me/TheAbbeyBot">Open in Telegram</a><p>Abbey-licensed residents only.</p>{authError && <p className="error" role="alert">{authError}</p>}<button className="subtle" onClick={preview}>Preview</button></section> : <>
         {demo && <div className="preview"><span>Preview · sample bookings</span><button onClick={() => { setDemo(false); setSession(null); setBookings([]); setNotice(''); }}>Exit</button></div>}
         {searching && <BookingSearch onSearch={setSearch}/>}
         {notice && <div role="status" className="notice">{notice}<button aria-label="Dismiss" onClick={() => setNotice('')}><X size={16}/></button></div>}

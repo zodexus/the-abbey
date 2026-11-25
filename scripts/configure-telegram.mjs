@@ -32,8 +32,8 @@ try {
     if (!health.ok || state.app !== 'abbey-mini-app-v1' || !state.ready) throw new Error('Deploy the new app with its database and environment configured before switching the bot.');
     await call('setWebhook', { url:`${url.replace(/\/$/,'')}/api/telegram/webhook`, secret_token:secret, allowed_updates:['message','callback_query'] });
     await call('setChatMenuButton', { menu_button:{type:'web_app',text:'Calendar',web_app:{url}} });
-    await call('setMyCommands', { commands:[{command:'start',description:'Open the Abbey booking calendar'},{command:'help',description:'Booking help'}] });
-    await call('setMyCommands', { scope:{type:'chat',chat_id:Number(process.env.TELEGRAM_QM_CHAT_ID)}, commands:[{command:'start',description:'Open the calendar'},{command:'pending',description:'Review pending booking requests'},{command:'sync',description:'Retry queued notifications'}] });
+    await call('setMyCommands', { commands:[{command:'start',description:'Open calendar or equipment loans'},{command:'equipment',description:'Open equipment loans'},{command:'calendar',description:'Open the booking calendar'},{command:'help',description:'Booking and equipment help'}] });
+    await call('setMyCommands', { scope:{type:'chat',chat_id:Number(process.env.TELEGRAM_QM_CHAT_ID)}, commands:[{command:'start',description:'Open calendar or equipment loans'},{command:'equipment',description:'Open equipment loans'},{command:'calendar',description:'Open the booking calendar'},{command:'pending',description:'Review pending booking requests'},{command:'sync',description:'Retry queued notifications'}] });
     console.log('Webhook, calendar menu, and commands configured. Send /start to @TheAbbeyBot.');
   } else console.log('Read-only check. After deployment, run with --apply to configure the bot.');
 } catch (error) { console.error(error.message.includes(token) ? 'Telegram connection failed.' : error.message); process.exitCode = 1; }
