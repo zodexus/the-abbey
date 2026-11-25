@@ -1,6 +1,6 @@
 import { db } from '@/lib/server';
 import { deliverBookingReminders, type Reminder } from '@/lib/booking-reminders';
-import { telegram } from '@/lib/telegram';
+import { flushNotifications, telegram } from '@/lib/telegram';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export async function POST(request: Request) {
@@ -11,6 +11,7 @@ export async function POST(request: Request) {
     const { data: claimed, error: authError } = await client.rpc('abbey_claim_reminder_run', { p_token: token });
     if (authError) throw new Error('Scheduler unavailable');
     if (!claimed) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const began = Date.now();
     const result = await deliverBookingReminders({
       take: async () => {
         const { data, error } = await client.rpc('abbey_take_booking_reminders');
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
       },
       send: async (recipient, html) => { await telegram('sendMessage', { chat_id: recipient, text: html, parse_mode: 'HTML' }); },
     });
-    return Response.json(result, { status: result.failed ? 503 : 200 });
+    const notifications = await flushNotifications(Math.max(0, 45000 - (Date.now() - began)));
+    return Response.json({ ...result, notificationsDelivered: notifications }, { status: result.failed || !notifications ? 503 : 200 });
   } catch { return Response.json({ error: 'Reminder delivery delayed' }, { status: 503 }); }
 }

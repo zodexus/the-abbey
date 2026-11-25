@@ -20,17 +20,22 @@ export function bookingSummary(b: { resident_name: string; purpose: string; star
   return `${b.resident_name}\n${format(b.starts_at)} → ${format(b.ends_at)} (SGT)\n${b.purpose}`;
 }
 // Persist notifications with the booking transaction; retry via /pending and /sync.
-export async function flushNotifications() {
+export async function flushNotifications(budgetMs = 45000) {
+  if (budgetMs <= 0) return true;
+  const deadline = Date.now() + budgetMs;
   const { data, error } = await db().rpc('abbey_take_notifications');
   if (error) return false;
   let success = true;
   for (const n of data || []) {
+    if (Date.now() >= deadline) { success = false; break; }
     try {
       await send(n.chat_id, notificationText(n.body), n.markup || undefined);
-      await db().from('abbey_notifications').update({ sent_at: new Date().toISOString(), locked_until: null }).eq('id', n.id);
+      const { error: receiptError } = await db().from('abbey_notifications').update({ sent_at: new Date().toISOString(), locked_until: null }).eq('id', n.id);
+      if (receiptError) throw new Error('Notification receipt could not be saved');
     } catch {
       success = false;
-      await db().from('abbey_notifications').update({ locked_until: null }).eq('id', n.id);
+      const delay = Math.min(3600000, 30000 * 2 ** Math.min(n.attempts || 1, 7));
+      await db().from('abbey_notifications').update({ locked_until: null, next_attempt_at: new Date(Date.now() + delay).toISOString() }).eq('id', n.id);
     }
   }
   return success;
